@@ -1,0 +1,2453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MicroSerpientes 3.2 — José Guerrero · Qualab</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#070b16;--panel:rgba(20,28,48,.85);--panel2:#1d2840;
+  --neon:#39ff88;--cyan:#38e1ff;--pink:#ff4d9d;--yellow:#ffd93d;
+  --orange:#ff9f1c;--red:#ff4d6d;--purple:#a06bff;--gold:#ffcc33;
+  --text:#eaf4ff;--muted:#8ba7c4;
+  --cell-font:12px;--token-font:22px;
+}
+body.hc{--bg:#000;--panel:#0a0a0a;--panel2:#151515;--text:#fff;--muted:#ddd;
+  --neon:#00ff88;--cyan:#00ddff;--pink:#ff00aa}
+body.rm *{animation-duration:0s !important;transition-duration:0s !important}
+html,body{height:100%}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:
+    radial-gradient(circle at 12% 8%,#1b3a5c 0%,transparent 42%),
+    radial-gradient(circle at 88% 92%,#3a1449 0%,transparent 42%),
+    radial-gradient(circle at 50% 50%,#0f2033 0%,var(--bg) 70%);
+  color:var(--text);min-height:100vh;overflow-x:hidden;padding:14px;
+}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.15;
+  background-image:
+    linear-gradient(rgba(57,255,136,.1) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(56,225,255,.1) 1px,transparent 1px);
+  background-size:52px 52px;
+  mask-image:radial-gradient(circle at 50% 45%,#000 20%,transparent 75%)}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;
+  background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+.screen{display:none;animation:fade .5s ease;position:relative;z-index:2}
+.screen.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+#screen-menu{max-width:900px;margin:0 auto;text-align:center;padding:14px 0}
+.logo-row{font-size:76px;line-height:1;display:flex;justify-content:center;gap:8px;margin-bottom:6px}
+.logo-row span{display:inline-block;animation:float 3.4s ease-in-out infinite;filter:drop-shadow(0 0 22px rgba(57,255,136,.6))}
+.logo-row span:nth-child(2){animation-delay:.35s}
+.logo-row span:nth-child(3){animation-delay:.7s}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-15px) rotate(5deg)}}
+h1{font-size:clamp(36px,8vw,64px);letter-spacing:1px;
+  background:linear-gradient(100deg,var(--neon),var(--cyan) 45%,var(--pink));
+  -webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900;margin-bottom:4px}
+.tagline{color:var(--cyan);letter-spacing:4px;text-transform:uppercase;font-size:12px;font-weight:800}
+.intro{max-width:680px;margin:20px auto;color:var(--muted);line-height:1.75;font-size:15px}
+.intro b{color:var(--text)}
+.menu-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:760px;margin:24px auto 18px}
+@media(max-width:720px){.menu-grid{grid-template-columns:1fr 1fr}}
+.menu-card{background:linear-gradient(160deg,rgba(29,40,64,.9),rgba(20,28,48,.9));
+  border:1.5px solid rgba(56,225,255,.18);border-radius:18px;padding:20px 12px;cursor:pointer;
+  transition:.25s;backdrop-filter:blur(8px);text-align:center;font-family:inherit;color:var(--text)}
+.menu-card:hover{transform:translateY(-4px);border-color:var(--neon);
+  box-shadow:0 14px 40px rgba(57,255,136,.2);background:rgba(57,255,136,.08)}
+.menu-card .ico{font-size:34px;display:block;margin-bottom:8px;filter:drop-shadow(0 0 12px currentColor)}
+.menu-card .nm{font-weight:900;font-size:15px}
+.menu-card .sub{font-size:11.5px;color:var(--muted);margin-top:3px}
+.menu-card.primary{grid-column:1/-1;background:linear-gradient(100deg,var(--neon),var(--cyan));color:#04140c;border:none}
+.menu-card.primary .nm{color:#04140c;font-size:20px}
+.menu-card.primary .sub{color:#04140ccc}
+
+.menu-credit{margin-top:22px;display:flex;align-items:center;justify-content:center;
+  gap:12px;flex-wrap:wrap;color:var(--muted);font-size:12.5px}
+.menu-credit img.avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;
+  border:2px solid rgba(57,255,136,.5);box-shadow:0 0 16px rgba(57,255,136,.35);
+  cursor:pointer;transition:.25s}
+.menu-credit img.avatar:hover{transform:scale(1.08);border-color:var(--neon)}
+.menu-credit img.qlogo{height:28px;width:auto;filter:drop-shadow(0 0 8px rgba(56,225,255,.4))}
+.menu-credit .divider{color:rgba(255,255,255,.2)}
+.menu-credit b{color:var(--text)}
+.menu-credit button{background:transparent;border:none;color:var(--cyan);font-family:inherit;
+  cursor:pointer;font-size:12.5px;font-weight:700;text-decoration:underline;
+  text-underline-offset:3px;padding:0}
+.menu-credit button:hover{color:var(--neon)}
+
+#screen-config{max-width:760px;margin:0 auto;padding:14px 0}
+.config-box{background:linear-gradient(165deg,rgba(29,40,64,.85),rgba(13,20,36,.9));
+  border:1.5px solid rgba(56,225,255,.22);border-radius:24px;padding:26px 24px;
+  box-shadow:0 24px 60px rgba(0,0,0,.55);backdrop-filter:blur(12px)}
+.config-box h2{font-size:24px;font-weight:900;margin-bottom:20px;text-align:center;
+  background:linear-gradient(90deg,var(--neon),var(--cyan));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.opt-group{margin-bottom:20px}
+.opt-group>label{display:block;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--muted);font-weight:800;margin-bottom:9px}
+.opt-row{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+@media(max-width:520px){.opt-row{grid-template-columns:1fr 1fr}}
+.opt-btn{background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);
+  color:var(--text);padding:12px 10px;border-radius:13px;cursor:pointer;font-family:inherit;
+  font-size:13.5px;font-weight:700;transition:.2s;display:flex;flex-direction:column;align-items:center;gap:5px}
+.opt-btn .big{font-size:22px}
+.opt-btn .small{font-size:10.5px;color:var(--muted);font-weight:500}
+.opt-btn:hover{border-color:var(--neon);background:rgba(57,255,136,.08)}
+.opt-btn.selected{border-color:var(--neon);background:rgba(57,255,136,.15);box-shadow:0 0 20px rgba(57,255,136,.25)}
+.opt-btn.selected .small{color:var(--neon)}
+
+.btn{padding:15px 40px;font-size:16px;font-weight:800;letter-spacing:1.2px;color:#04140c;
+  background:linear-gradient(100deg,var(--neon),var(--cyan));border:none;border-radius:50px;
+  cursor:pointer;font-family:inherit;transition:.24s;box-shadow:0 10px 34px rgba(57,255,136,.3);
+  position:relative;overflow:hidden}
+.btn:hover{transform:translateY(-3px);box-shadow:0 16px 42px rgba(57,255,136,.45)}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none;filter:grayscale(.6)}
+.btn.small{padding:11px 20px;font-size:13px;letter-spacing:.8px}
+.btn.secondary{background:linear-gradient(100deg,var(--gold),var(--orange));color:#1a0e00}
+.btn.danger{background:linear-gradient(100deg,var(--red),var(--pink));color:#fff}
+.btn.ghost{background:transparent;color:var(--cyan);border:1.5px solid rgba(56,225,255,.4);box-shadow:none}
+.btn.ghost:hover{background:rgba(56,225,255,.1);box-shadow:none}
+
+#screen-game{max-width:1240px;margin:0 auto}
+.game-wrap{display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start}
+@media(max-width:980px){.game-wrap{grid-template-columns:1fr}}
+.board-shell{position:relative;padding:14px;
+  background:linear-gradient(155deg,rgba(29,40,64,.7),rgba(13,20,36,.85));
+  border:1.5px solid rgba(56,225,255,.22);border-radius:26px;
+  box-shadow:0 20px 50px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.08);
+  backdrop-filter:blur(10px)}
+.board-shell::before{content:"";position:absolute;inset:6px;border-radius:20px;
+  border:1px dashed rgba(57,255,136,.12);pointer-events:none}
+.board{position:relative;display:grid;width:100%;border-radius:16px;overflow:hidden;
+  background:
+    radial-gradient(circle at 20% 20%,rgba(56,225,255,.06),transparent 40%),
+    radial-gradient(circle at 80% 80%,rgba(160,107,255,.08),transparent 40%),
+    #08111e;
+  box-shadow:inset 0 0 40px rgba(0,0,0,.6)}
+.board.shake{animation:boardShake .35s ease}
+@keyframes boardShake{0%,100%{transform:translate(0,0)}25%{transform:translate(-6px,3px)}
+  50%{transform:translate(5px,-4px)}75%{transform:translate(-4px,-2px)}}
+.cell{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;
+  font-size:var(--cell-font);font-weight:800;color:rgba(255,255,255,.5);
+  border:1px solid rgba(255,255,255,.05);transition:background .3s,box-shadow .3s}
+.cell.even{background:rgba(56,225,255,.05)}
+.cell.odd{background:rgba(160,107,255,.05)}
+.cell:hover{background:rgba(57,255,136,.12);z-index:2;box-shadow:inset 0 0 0 1.5px rgba(57,255,136,.5)}
+.cell .num{position:absolute;top:4%;left:7%;font-size:.75em;opacity:.55;font-weight:800}
+.cell.snake{background:linear-gradient(145deg,rgba(255,77,109,.3),rgba(255,77,109,.06));color:#ffc9d4}
+.cell.ladder{background:linear-gradient(145deg,rgba(57,255,136,.28),rgba(57,255,136,.06));color:#c8ffe0}
+.cell.special{background:linear-gradient(145deg,rgba(255,204,51,.35),rgba(255,204,51,.08));color:#fff8c8}
+.cell.special .mark{font-size:1.5em;filter:drop-shadow(0 0 8px #ffcc33)}
+.cell.goal{background:linear-gradient(145deg,rgba(255,204,51,.55),rgba(255,204,51,.18));
+  color:#fff;box-shadow:inset 0 0 18px rgba(255,204,51,.5)}
+.cell.highlight{animation:cellPulse .8s ease}
+@keyframes cellPulse{0%,100%{box-shadow:inset 0 0 0 0 transparent}
+  30%{box-shadow:inset 0 0 0 3px #fff,0 0 24px rgba(255,255,255,.5)}}
+
+.overlay{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
+.overlay .snake-body{fill:none;stroke:url(#snakeGrad);stroke-linecap:round;stroke-linejoin:round}
+.overlay .snake-head{fill:#ff4d6d;stroke:#fff;stroke-width:.15}
+.overlay .snake-tail{fill:#ff9f1c;stroke:#fff;stroke-width:.1}
+.overlay .snake-glow{fill:none;stroke:#ff4d6d;opacity:0}
+.overlay .snake-glow.on{animation:snakeGlow 1.4s ease}
+@keyframes snakeGlow{0%{opacity:.85}100%{opacity:0}}
+.overlay .ladder-rail{fill:none;stroke:url(#ladderGrad);stroke-linecap:round}
+.overlay .ladder-rung{fill:none;stroke:#39ff88;stroke-linecap:round;opacity:.85}
+.overlay .endpoint{fill:#fff;opacity:.9}
+
+.token{position:absolute;z-index:6;width:8%;height:8%;display:grid;place-items:center;
+  font-size:var(--token-font);line-height:1;transform:translate(-50%,-50%);
+  transition:left .18s cubic-bezier(.3,.9,.4,1.25),top .18s cubic-bezier(.3,.9,.4,1.25);
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.8));pointer-events:none}
+.token.p0{z-index:7;filter:drop-shadow(0 0 12px rgba(56,225,255,.9)) drop-shadow(0 4px 8px rgba(0,0,0,.8))}
+.token.p1{filter:drop-shadow(0 0 10px rgba(255,77,157,.85)) drop-shadow(0 4px 8px rgba(0,0,0,.8))}
+.token.hop{animation:hop .32s ease}
+@keyframes hop{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-90%) scale(1.3)}}
+
+.panel{background:linear-gradient(165deg,rgba(29,40,64,.75),rgba(13,20,36,.9));
+  border:1.5px solid rgba(56,225,255,.2);border-radius:24px;padding:14px;
+  box-shadow:0 20px 50px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06);
+  display:flex;flex-direction:column;gap:11px;position:sticky;top:14px;backdrop-filter:blur(12px)}
+@media(max-width:980px){.panel{position:static}}
+.progress-info{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);font-weight:700}
+.progress-bar{height:6px;background:rgba(255,255,255,.07);border-radius:20px;overflow:hidden;margin-top:4px}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--neon),var(--cyan));transition:width .4s;border-radius:20px}
+.players{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pcard{background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);
+  border-radius:16px;padding:10px 8px;text-align:center;transition:.3s;position:relative;overflow:hidden}
+.pcard.active{border-color:var(--neon);background:rgba(57,255,136,.1);
+  box-shadow:0 0 26px rgba(57,255,136,.25),inset 0 0 14px rgba(57,255,136,.1)}
+.pcard.active::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--neon),var(--cyan));animation:scanline 1.5s linear infinite}
+@keyframes scanline{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.pcard .av{font-size:26px;line-height:1;filter:drop-shadow(0 0 8px currentColor)}
+.pcard .nm{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin-top:4px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcard .pos{font-size:19px;font-weight:900;color:var(--text);margin-top:1px}
+.pcard .sc{font-size:11px;color:var(--gold);font-weight:800}
+.pcard .streak{position:absolute;top:4px;right:5px;font-size:10px;font-weight:900;color:var(--yellow);
+  background:rgba(255,217,61,.18);padding:2px 6px;border-radius:10px;opacity:0;transition:.3s}
+.pcard .streak.on{opacity:1}
+.dice-area{display:flex;align-items:center;justify-content:center;gap:12px;padding:2px 0}
+.die{width:72px;height:72px;border-radius:16px;background:linear-gradient(150deg,#fff,#c9d9ea);
+  display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);
+  padding:9px;gap:3px;box-shadow:0 10px 24px rgba(0,0,0,.6),inset 0 -5px 0 rgba(0,0,0,.15);
+  transition:transform .1s;flex:0 0 auto}
+.die.rolling{animation:roll .32s linear infinite}
+@keyframes roll{0%{transform:rotate(0) scale(1)}50%{transform:rotate(180deg) scale(1.1)}100%{transform:rotate(360deg) scale(1)}}
+.pip{border-radius:50%;background:transparent}
+.pip.on{background:radial-gradient(circle at 32% 32%,#4a5a7a,#101827);box-shadow:inset 0 -1px 1px rgba(255,255,255,.25)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.actions .btn{width:100%;padding:13px 8px;font-size:13px;letter-spacing:.6px}
+.msg{min-height:76px;border-radius:14px;padding:12px 14px;background:rgba(0,0,0,.35);
+  border-left:4px solid var(--cyan);font-size:12.8px;line-height:1.55;color:var(--text);transition:.3s}
+.msg.good{border-left-color:var(--neon);background:rgba(57,255,136,.09)}
+.msg.bad{border-left-color:var(--red);background:rgba(255,77,109,.1)}
+.msg.info{border-left-color:var(--yellow);background:rgba(255,217,61,.07)}
+.msg b{color:var(--neon)}
+.msg.bad b{color:var(--red)}
+.inv-title{display:flex;align-items:center;justify-content:space-between;
+  font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:800}
+.inv-title .count{background:rgba(57,255,136,.15);color:var(--neon);padding:2px 9px;border-radius:20px;font-size:10px}
+.inventory{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;min-height:58px;padding:8px;
+  background:rgba(0,0,0,.28);border-radius:14px;border:1px dashed rgba(56,225,255,.18)}
+.inv-empty{grid-column:1/-1;text-align:center;color:var(--muted);font-size:11.5px;padding:11px 4px;font-style:italic}
+.inv-slot{aspect-ratio:1;border-radius:10px;display:grid;place-items:center;position:relative;
+  background:linear-gradient(155deg,rgba(56,225,255,.15),rgba(56,225,255,.03));
+  border:1.5px solid rgba(56,225,255,.3);font-size:20px;cursor:pointer;transition:.2s}
+.inv-slot:hover{transform:scale(1.12);border-color:var(--cyan);box-shadow:0 0 18px rgba(56,225,255,.4)}
+.inv-slot .qty{position:absolute;bottom:-3px;right:-3px;background:var(--neon);color:#04140c;
+  font-size:9.5px;font-weight:900;min-width:16px;height:16px;border-radius:50%;
+  display:grid;place-items:center;padding:0 3px;font-family:inherit}
+.inv-slot.passive{background:linear-gradient(155deg,rgba(255,204,51,.16),rgba(255,204,51,.03));border-color:rgba(255,204,51,.35)}
+.inv-slot.active{background:linear-gradient(155deg,rgba(255,77,157,.16),rgba(255,77,157,.03));border-color:rgba(255,77,157,.35)}
+.inv-slot .hint{position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);
+  background:#0a1420;color:var(--text);font-size:10px;padding:3px 8px;border-radius:6px;
+  white-space:nowrap;opacity:0;pointer-events:none;transition:.2s;z-index:10;
+  border:1px solid rgba(56,225,255,.3)}
+.inv-slot:hover .hint{opacity:1;bottom:-26px}
+
+.modal{position:fixed;inset:0;z-index:200;background:rgba(5,10,18,.88);backdrop-filter:blur(9px);
+  display:none;align-items:center;justify-content:center;padding:16px}
+.modal.show{display:flex;animation:fade .3s ease}
+.modal-box{width:100%;max-width:700px;background:linear-gradient(165deg,#1e2f4a,#0d1725);
+  border:2px solid rgba(56,225,255,.32);border-radius:24px;padding:22px 22px 20px;
+  box-shadow:0 30px 80px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.08);max-height:92vh;overflow-y:auto}
+.modal-box::-webkit-scrollbar{width:7px}
+.modal-box::-webkit-scrollbar-thumb{background:rgba(56,225,255,.35);border-radius:10px}
+.modal-title{font-size:20px;font-weight:900;text-align:center;margin-bottom:5px;
+  background:linear-gradient(90deg,var(--neon),var(--cyan));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.modal-sub{text-align:center;color:var(--muted);font-size:12.5px;margin-bottom:16px}
+.q-cat{display:inline-block;font-size:10px;letter-spacing:2.2px;text-transform:uppercase;
+  color:var(--cyan);border:1px solid rgba(56,225,255,.45);border-radius:30px;
+  padding:4px 14px;margin-bottom:10px;font-weight:800;background:rgba(56,225,255,.08)}
+.q-diff{display:inline-block;font-size:10px;letter-spacing:1px;color:var(--yellow);margin-left:8px;font-weight:800}
+.q-icon{font-size:48px;text-align:center;margin-bottom:8px;filter:drop-shadow(0 0 18px rgba(57,255,136,.4))}
+.q-text{font-size:clamp(15.5px,2.6vw,19px);line-height:1.5;text-align:center;font-weight:700;margin-bottom:6px}
+.q-opts{display:grid;gap:10px;margin-top:16px}
+.q-opt{display:flex;align-items:center;gap:12px;text-align:left;
+  background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.1);
+  color:var(--text);border-radius:14px;padding:13px 15px;cursor:pointer;
+  font-family:inherit;font-size:13.5px;line-height:1.4;font-weight:500;transition:.16s}
+.q-opt:hover:not(:disabled){border-color:var(--neon);background:rgba(57,255,136,.1);transform:translateX(5px)}
+.q-opt:disabled{cursor:default}
+.q-opt .k{flex:0 0 26px;height:26px;border-radius:8px;display:grid;place-items:center;
+  background:rgba(56,225,255,.18);color:var(--cyan);font-weight:900;font-size:12.5px}
+.q-opt.correct{background:rgba(57,255,136,.22);border-color:var(--neon);box-shadow:0 0 22px rgba(57,255,136,.3)}
+.q-opt.correct .k{background:var(--neon);color:#04140c}
+.q-opt.wrong{background:rgba(255,77,109,.2);border-color:var(--red);animation:shake .4s}
+.q-opt.wrong .k{background:var(--red);color:#fff}
+.q-opt.eliminated{opacity:.28;filter:grayscale(1)}
+.q-opt .num-order{flex:0 0 26px;height:26px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(160,107,255,.25);color:#c9b0ff;font-weight:900;font-size:12.5px}
+.q-opt.picked{border-color:var(--purple);background:rgba(160,107,255,.15)}
+.q-opt.picked .num-order{background:var(--purple);color:#fff}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.expl{margin-top:14px;padding:12px 14px;border-radius:13px;background:rgba(255,217,61,.09);
+  border-left:4px solid var(--yellow);font-size:12.8px;line-height:1.55;color:var(--text)}
+.expl b{color:var(--yellow)}
+.order-help{font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
+
+.shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+@media(max-width:560px){.shop-grid{grid-template-columns:1fr}}
+.shop-item{display:flex;gap:11px;align-items:flex-start;
+  background:linear-gradient(155deg,rgba(56,225,255,.07),rgba(255,255,255,.02));
+  border:1.5px solid rgba(56,225,255,.18);border-radius:16px;padding:12px;transition:.25s;
+  position:relative;overflow:hidden}
+.shop-item:hover{border-color:rgba(57,255,136,.5);transform:translateY(-2px)}
+.shop-item.passive{background:linear-gradient(155deg,rgba(255,204,51,.08),rgba(255,255,255,.02));border-color:rgba(255,204,51,.24)}
+.shop-item.active{background:linear-gradient(155deg,rgba(255,77,157,.08),rgba(255,255,255,.02));border-color:rgba(255,77,157,.24)}
+.shop-ico{font-size:32px;flex:0 0 42px;height:42px;display:grid;place-items:center;
+  background:rgba(0,0,0,.25);border-radius:11px;filter:drop-shadow(0 0 10px currentColor)}
+.shop-info{flex:1;min-width:0}
+.shop-name{font-weight:800;font-size:13.5px;margin-bottom:3px;color:var(--text)}
+.shop-desc{font-size:11.5px;color:var(--muted);line-height:1.45;margin-bottom:8px}
+.shop-buy{display:inline-flex;align-items:center;gap:5px;
+  background:linear-gradient(100deg,var(--gold),var(--orange));color:#1a0e00;
+  font-weight:900;font-size:11.5px;border:none;border-radius:20px;padding:5px 12px;
+  cursor:pointer;font-family:inherit;transition:.2s}
+.shop-buy:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 7px 18px rgba(255,204,51,.4)}
+.shop-buy:disabled{opacity:.35;cursor:not-allowed;filter:grayscale(.6)}
+.shop-tag{position:absolute;top:7px;right:8px;font-size:9px;font-weight:900;letter-spacing:1px;
+  padding:3px 8px;border-radius:12px;text-transform:uppercase}
+.shop-tag.p{background:rgba(255,204,51,.2);color:var(--gold)}
+.shop-tag.a{background:rgba(255,77,157,.2);color:var(--pink)}
+.shop-balance{display:flex;align-items:center;justify-content:center;gap:10px;
+  background:rgba(255,204,51,.08);border:1.5px solid rgba(255,204,51,.3);
+  border-radius:14px;padding:11px;margin-bottom:16px;font-size:13.5px;font-weight:800;color:var(--gold)}
+.shop-balance .big{font-size:22px;color:var(--gold);text-shadow:0 0 18px rgba(255,204,51,.6)}
+
+#screen-end{max-width:700px;margin:0 auto;text-align:center;padding:16px 0}
+.trophy{font-size:90px;line-height:1;margin-bottom:8px;animation:float 2.8s ease-in-out infinite;
+  filter:drop-shadow(0 0 30px rgba(255,204,51,.6))}
+.win-title{font-size:clamp(26px,5vw,40px);font-weight:900;
+  background:linear-gradient(100deg,var(--neon),var(--cyan),var(--pink));
+  -webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:12px}
+.final-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:640px;margin:0 auto 20px}
+@media(max-width:520px){.final-stats{grid-template-columns:1fr 1fr}}
+.fstat{background:linear-gradient(155deg,rgba(29,40,64,.9),rgba(20,28,48,.9));
+  border:1px solid rgba(56,225,255,.2);border-radius:14px;padding:13px 6px}
+.fstat .n{font-size:20px;font-weight:900;color:var(--neon)}
+.fstat .l{font-size:9.5px;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);margin-top:3px;font-weight:800}
+.review{max-width:640px;margin:0 auto 20px;text-align:left;max-height:260px;overflow-y:auto;padding:6px}
+.review h3{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);text-align:center;margin-bottom:10px}
+.review-item{background:rgba(255,77,109,.08);border-left:3px solid var(--red);
+  border-radius:9px;padding:10px 13px;margin-bottom:7px;font-size:12.5px;line-height:1.5;color:var(--text)}
+.review-item b{color:var(--red);display:block;margin-bottom:3px;font-size:12.5px}
+.review-empty{text-align:center;color:var(--neon);font-size:13.5px;padding:14px;
+  background:rgba(57,255,136,.08);border-radius:12px;border-left:3px solid var(--neon)}
+
+#screen-stats{max-width:680px;margin:0 auto;padding:16px 0}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.stat-block{background:linear-gradient(155deg,rgba(29,40,64,.9),rgba(20,28,48,.9));
+  border:1.5px solid rgba(56,225,255,.2);border-radius:16px;padding:16px}
+.stat-block .lbl{font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--muted);font-weight:800;margin-bottom:6px}
+.stat-block .big{font-size:28px;font-weight:900;color:var(--neon)}
+.stat-block .sub{font-size:12px;color:var(--muted);margin-top:4px}
+.bar-row{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:12px}
+.bar-row .lbl{flex:0 0 130px;color:var(--muted);font-weight:700;font-size:11.5px}
+.bar-wrap{flex:1;height:8px;background:rgba(255,255,255,.08);border-radius:20px;overflow:hidden}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--neon),var(--cyan));border-radius:20px}
+.bar-row .pct{flex:0 0 42px;text-align:right;color:var(--text);font-weight:800}
+
+/* ---------- SOBRE EL AUTOR ---------- */
+#screen-about{max-width:900px;margin:0 auto;padding:16px 0}
+.about-card{
+  background:linear-gradient(165deg,rgba(29,40,64,.85),rgba(13,20,36,.95));
+  border:1.5px solid rgba(56,225,255,.22); border-radius:26px;
+  padding:28px; box-shadow:0 30px 70px rgba(0,0,0,.6);
+  backdrop-filter:blur(12px);
+  display:grid; grid-template-columns:260px 1fr; gap:26px; align-items:start;
+}
+@media(max-width:700px){ .about-card{grid-template-columns:1fr; gap:18px; padding:20px} }
+
+.about-photo-wrap{
+  position:relative; border-radius:20px; overflow:hidden;
+  border:2px solid rgba(56,225,255,.35);
+  box-shadow:0 14px 40px rgba(56,225,255,.18);
+}
+.about-photo-wrap::after{
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(180deg, transparent 55%, rgba(5,10,18,.85));
+  pointer-events:none;
+}
+.about-photo{ width:100%; display:block; aspect-ratio:2/3; object-fit:cover; }
+.about-role{
+  position:absolute; bottom:10px; left:10px; right:10px; z-index:2;
+  background:linear-gradient(100deg, var(--neon), var(--cyan));
+  color:#04140c; font-weight:900; font-size:11px;
+  letter-spacing:1.2px; text-transform:uppercase;
+  padding:6px 12px; border-radius:30px; text-align:center;
+}
+.about-logo{
+  margin-top:14px; padding:14px; border-radius:16px;
+  background:#141414; border:1.5px solid rgba(56,225,255,.25);
+  display:flex; align-items:center; justify-content:center;
+}
+.about-logo img{ max-width:100%; height:auto; max-height:80px; display:block; }
+.about-info h2{
+  font-size:clamp(22px,3.5vw,30px); font-weight:900; margin-bottom:4px;
+  background:linear-gradient(100deg,var(--neon),var(--cyan));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.about-subtitle{
+  color:var(--cyan); font-size:12.5px; letter-spacing:2.5px;
+  text-transform:uppercase; font-weight:800; margin-bottom:16px;
+}
+.about-bio{ color:var(--muted); font-size:14px; line-height:1.75; margin-bottom:14px; }
+.about-bio b{ color:var(--text); }
+.about-roles{ display:flex; flex-wrap:wrap; gap:7px; margin:14px 0 18px; }
+.about-tag{
+  font-size:11px; padding:5px 12px; border-radius:20px; font-weight:800;
+  background:rgba(57,255,136,.13); color:var(--neon);
+  border:1px solid rgba(57,255,136,.3);
+}
+.about-tag.cyan{ background:rgba(56,225,255,.13); color:var(--cyan); border-color:rgba(56,225,255,.3); }
+.about-tag.gold{ background:rgba(255,204,51,.13); color:var(--gold); border-color:rgba(255,204,51,.3); }
+.about-quote{
+  margin:16px 0; padding:14px 16px; border-radius:14px;
+  background:rgba(255,204,51,.07); border-left:4px solid var(--gold);
+  font-size:13.5px; line-height:1.6; color:var(--text); font-style:italic;
+}
+.about-quote::before{ content:"“"; font-size:28px; color:var(--gold); line-height:0; vertical-align:-8px; margin-right:3px; }
+.about-quote::after{ content:"”"; font-size:28px; color:var(--gold); line-height:0; vertical-align:-8px; margin-left:3px; }
+.about-footer{
+  margin-top:22px; padding-top:18px; border-top:1px dashed rgba(56,225,255,.2);
+  display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
+  font-size:12px; color:var(--muted);
+}
+.about-footer b{ color:var(--text); }
+.about-placeholder{
+  padding:60px 16px; text-align:center; color:var(--muted); font-size:12.5px;
+  background:rgba(255,255,255,.03); border-radius:16px; border:1px dashed rgba(56,225,255,.25);
+  line-height:1.6;
+}
+
+#tutorial-overlay{position:fixed;inset:0;z-index:250;background:rgba(0,0,0,.75);display:none}
+#tutorial-overlay.show{display:block}
+.tut-highlight{position:absolute;border:3px solid var(--neon);border-radius:16px;
+  box-shadow:0 0 0 9999px rgba(0,0,0,.7),0 0 40px var(--neon);
+  transition:all .35s ease;pointer-events:none}
+.tut-tip{position:absolute;max-width:340px;background:linear-gradient(165deg,#1e2f4a,#0d1725);
+  border:2px solid var(--neon);border-radius:18px;padding:16px 18px;
+  box-shadow:0 20px 60px rgba(0,0,0,.7);color:var(--text);font-size:13.5px;line-height:1.55}
+.tut-tip b{color:var(--neon);display:block;margin-bottom:6px;font-size:14.5px}
+.tut-tip .tut-foot{display:flex;gap:8px;margin-top:12px;justify-content:flex-end}
+.tut-tip .tut-foot button{padding:7px 14px;border-radius:20px;border:none;cursor:pointer;
+  font-family:inherit;font-size:12px;font-weight:800}
+.tut-skip{background:transparent;color:var(--muted);border:1px solid rgba(255,255,255,.15) !important}
+.tut-next{background:linear-gradient(100deg,var(--neon),var(--cyan));color:#04140c}
+.tut-step{position:absolute;top:-14px;right:-14px;background:var(--neon);color:#04140c;
+  font-weight:900;font-size:11px;padding:3px 10px;border-radius:20px}
+
+#toast{position:fixed;left:50%;top:18px;transform:translate(-50%,-160%);z-index:300;
+  padding:12px 24px;border-radius:50px;font-weight:900;font-size:14px;
+  transition:transform .42s cubic-bezier(.2,.9,.3,1.35);
+  box-shadow:0 16px 44px rgba(0,0,0,.6);white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+#toast.show{transform:translate(-50%,0)}
+.pt{position:fixed;width:9px;height:9px;border-radius:50%;pointer-events:none;z-index:400}
+.mb{position:fixed;pointer-events:none;opacity:.055;z-index:0;animation:drift linear infinite}
+@keyframes drift{0%{transform:translateY(0) rotate(0)}50%{transform:translateY(-42px) rotate(180deg)}100%{transform:translateY(0) rotate(360deg)}}
+.float-num{position:fixed;pointer-events:none;z-index:500;font-weight:900;font-size:22px;
+  text-shadow:0 2px 8px rgba(0,0,0,.8);animation:floatUp 1.4s ease-out forwards}
+@keyframes floatUp{0%{transform:translate(-50%,-50%) scale(.6);opacity:0}
+  20%{transform:translate(-50%,-90%) scale(1.2);opacity:1}
+  100%{transform:translate(-50%,-180%) scale(1);opacity:0}}
+.confetti{position:fixed;width:10px;height:14px;top:-20px;pointer-events:none;z-index:600}
+@keyframes fall{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(110vh) rotate(720deg)}}
+</style>
+</head>
+<body>
+
+<!-- MENU -->
+<section id="screen-menu" class="screen active">
+  <div class="logo-row"><span>🐍</span><span>🪜</span><span>🦠</span></div>
+  <h1>MicroSerpientes</h1>
+  <p class="tagline">Serpientes · Escaleras · Microbiología de Alimentos</p>
+  <p class="intro">
+    Avanza por el tablero, responde preguntas de microbiología y usa tus puntos en la
+    <b style="color:#ffcc33">Tienda Científica</b>. Las <b style="color:#39ff88">escaleras verdes</b> son buenas
+    prácticas; las <b style="color:#ff4d6d">serpientes rojas</b>, errores de higiene.
+    Un juego educativo de <b>José Guerrero · Qualab Consultoría</b>.
+  </p>
+  <div class="menu-grid">
+    <button class="menu-card primary" data-action="play">
+      <span class="ico">▶</span><div class="nm">JUGAR</div><div class="sub">Configura y empieza</div>
+    </button>
+    <button class="menu-card" data-action="tutorial"><span class="ico">🎓</span><div class="nm">Tutorial</div><div class="sub">Cómo se juega</div></button>
+    <button class="menu-card" data-action="stats"><span class="ico">📊</span><div class="nm">Estadísticas</div><div class="sub">Tu progreso</div></button>
+    <button class="menu-card" data-action="settings"><span class="ico">⚙️</span><div class="nm">Ajustes</div><div class="sub">Sonido, contraste</div></button>
+    <button class="menu-card" data-action="continue"><span class="ico">💾</span><div class="nm">Continuar</div><div class="sub">Última partida</div></button>
+    <button class="menu-card" data-action="about"><span class="ico">👤</span><div class="nm">Sobre el autor</div><div class="sub">José Guerrero · Qualab</div></button>
+  </div>
+  <p style="color:var(--muted);font-size:12.5px;margin-top:8px">
+    🏆 Récord: <b id="best" style="color:var(--yellow)">0</b> ·
+    📚 Conocimiento: <b id="know" style="color:var(--neon)">0%</b>
+  </p>
+
+  <div class="menu-credit">
+    <img src="jose-guerrero.jpg" alt="José Guerrero" class="avatar" data-action="about"
+         onerror="this.style.display='none'">
+    <span>Un juego de <b>José Guerrero</b></span>
+    <span class="divider">·</span>
+    <img src="qualab-logo.png" alt="Qualab" class="qlogo"
+         onerror="this.style.display='none'">
+    <span class="divider">·</span>
+    <button data-action="about">Ver más →</button>
+  </div>
+</section>
+
+<!-- CONFIG -->
+<section id="screen-config" class="screen">
+  <div class="config-box">
+    <h2>Configurar partida</h2>
+    <div class="opt-group">
+      <label>Modo</label>
+      <div class="opt-row" data-group="mode">
+        <button class="opt-btn" data-val="cpu"><span class="big">🦠</span><span>1 Jugador</span><span class="small">vs Microbio</span></button>
+        <button class="opt-btn" data-val="2p"><span class="big">👥</span><span>2 Jugadores</span><span class="small">Local alterno</span></button>
+      </div>
+    </div>
+    <div class="opt-group">
+      <label>Categoría</label>
+      <div class="opt-row" data-group="category" id="cat-row" style="grid-template-columns:repeat(3,1fr)"></div>
+    </div>
+    <div class="opt-group">
+      <label>Dificultad</label>
+      <div class="opt-row" data-group="difficulty">
+        <button class="opt-btn" data-val="facil"><span class="big">🌱</span><span>Fácil</span><span class="small">5×5 · ⭐</span></button>
+        <button class="opt-btn" data-val="normal"><span class="big">⚡</span><span>Normal</span><span class="small">8×5 · ⭐⭐</span></button>
+        <button class="opt-btn" data-val="dificil"><span class="big">🔥</span><span>Difícil</span><span class="small">10×6 · ⭐⭐⭐</span></button>
+      </div>
+    </div>
+    <div class="opt-group">
+      <label>Rival (si 1 jugador)</label>
+      <div class="opt-row" data-group="bot" id="bot-row">
+        <button class="opt-btn" data-val="salmonella"><span class="big">🥚</span><span>Salmonella</span><span class="small">50% acierto</span></button>
+        <button class="opt-btn" data-val="listeria"><span class="big">🧊</span><span>Listeria</span><span class="small">70% acierto</span></button>
+        <button class="opt-btn" data-val="aspergillus"><span class="big">🥜</span><span>Aspergillus</span><span class="small">55% + trampas</span></button>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:24px">
+      <button class="btn ghost small" id="btn-config-back">← Atrás</button>
+      <button class="btn" id="btn-config-start">▶ COMENZAR</button>
+    </div>
+  </div>
+</section>
+
+<!-- GAME -->
+<section id="screen-game" class="screen">
+  <div class="game-wrap">
+    <div class="board-shell">
+      <div class="board" id="board">
+        <svg class="overlay" id="overlay" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="snakeGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#ff4d6d"/><stop offset="100%" stop-color="#ff9f1c"/>
+            </linearGradient>
+            <linearGradient id="ladderGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#39ff88"/><stop offset="100%" stop-color="#38e1ff"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+    </div>
+    <aside class="panel">
+      <div class="progress-info">
+        <span id="progress-text">Turno 1</span>
+        <span id="progress-rival">—</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <div class="players solo" id="players-row"></div>
+      <div class="dice-area"><div class="die" id="die"></div></div>
+      <div class="actions">
+        <button class="btn" id="btn-roll">🎲 TIRAR</button>
+        <button class="btn secondary" id="btn-shop">🛒 TIENDA</button>
+      </div>
+      <div class="msg" id="msg" role="status" aria-live="polite">Pulsa <b>TIRAR</b> para empezar.</div>
+      <div class="inv-title">
+        <span id="inv-owner">🎒 Inventario</span>
+        <span class="count" id="inv-count">0 objetos</span>
+      </div>
+      <div class="inventory" id="inventory"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn ghost small" id="btn-menu">☰ Menú</button>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- END -->
+<section id="screen-end" class="screen">
+  <div class="trophy" id="end-icon">🏆</div>
+  <h2 class="win-title" id="end-title">¡Victoria!</h2>
+  <p style="color:var(--muted);max-width:560px;margin:0 auto 18px;line-height:1.7;font-size:14px" id="end-text"></p>
+  <div class="final-stats">
+    <div class="fstat"><div class="n" id="f-pts">0</div><div class="l">Puntos</div></div>
+    <div class="fstat"><div class="n" id="f-ok">0</div><div class="l">Aciertos</div></div>
+    <div class="fstat"><div class="n" id="f-tot">0</div><div class="l">Preguntas</div></div>
+    <div class="fstat"><div class="n" id="f-streak">0</div><div class="l">Mejor racha</div></div>
+  </div>
+  <div class="review" id="review-box"></div>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:8px">
+    <button class="btn ghost small" id="btn-end-menu">☰ Menú</button>
+    <button class="btn ghost small" id="btn-end-about">👤 Sobre el autor</button>
+    <button class="btn" id="btn-restart">🔄 Otra partida</button>
+  </div>
+</section>
+
+<!-- STATS -->
+<section id="screen-stats" class="screen">
+  <div style="text-align:center;margin-bottom:18px">
+    <h2 style="font-size:26px;font-weight:900;background:linear-gradient(90deg,var(--neon),var(--cyan));
+      -webkit-background-clip:text;background-clip:text;color:transparent">📊 Estadísticas</h2>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-block"><div class="lbl">Partidas</div><div class="big" id="st-games">0</div></div>
+    <div class="stat-block"><div class="lbl">Mejor punt.</div><div class="big" id="st-best">0</div></div>
+    <div class="stat-block"><div class="lbl">Precisión</div><div class="big" id="st-acc">0%</div><div class="sub" id="st-acc-sub">0/0</div></div>
+    <div class="stat-block"><div class="lbl">Vistas</div><div class="big" id="st-seen">0</div><div class="sub">del banco</div></div>
+  </div>
+  <div class="stat-block" style="margin-bottom:16px">
+    <div class="lbl" style="margin-bottom:12px">Precisión por categoría</div>
+    <div id="st-cats"></div>
+  </div>
+  <div style="text-align:center"><button class="btn ghost small" id="btn-stats-back">← Volver</button></div>
+</section>
+
+<!-- SOBRE EL AUTOR -->
+<section id="screen-about" class="screen">
+  <div class="about-card">
+    <div>
+      <div class="about-photo-wrap">
+        <img src="jose-guerrero.jpg" alt="José Guerrero, autor del juego" class="about-photo"
+             onerror="this.parentElement.innerHTML='<div class=\'about-placeholder\'>📸<br>Guarda tu foto como<br><b>jose-guerrero.jpg</b><br>en la misma carpeta que este HTML.</div>'">
+        <span class="about-role">Autor del juego</span>
+      </div>
+      <div class="about-logo">
+        <img src="qualab-logo.png" alt="Qualab Consultoría"
+             onerror="this.parentElement.innerHTML='<span style=\'color:#8ba7c4;font-size:12px\'>Logo: <b>qualab-logo.png</b></span>'">
+      </div>
+    </div>
+    <div class="about-info">
+      <h2>José Guerrero</h2>
+      <p class="about-subtitle">Químico Consultor · CEO de Qualab</p>
+      <p class="about-bio">
+        <b>José Guerrero</b> es químico consultor especializado en <b>microbiología de alimentos</b>,
+        <b>análisis de bebidas</b> y control de calidad en la industria alimentaria. Como
+        <b>CEO de Qualab Consultoría</b>, asesora a bodegas, plantas de producción y laboratorios
+        en la implementación de sistemas de inocuidad, HACCP y buenas prácticas de manufactura.
+      </p>
+      <p class="about-bio">
+        Este juego nace de su convicción de que <b>la formación en higiene alimentaria puede
+        ser rigurosa y divertida a la vez</b>. Los casos, patógenos y datos que aparecen en el
+        tablero están inspirados en situaciones reales atendidas por Qualab.
+      </p>
+      <div class="about-roles">
+        <span class="about-tag">🧪 Químico consultor</span>
+        <span class="about-tag cyan">🏢 CEO · Qualab Consultoría</span>
+        <span class="about-tag gold">🍷 Análisis de bebidas</span>
+        <span class="about-tag">🦠 Microbiología alimentaria</span>
+        <span class="about-tag cyan">📋 HACCP e inocuidad</span>
+      </div>
+      <div class="about-quote">
+        La microbiología de alimentos no se aprende memorizando nombres:
+        se aprende tomando decisiones. Este juego entrena ese músculo.
+      </div>
+      <div class="about-footer">
+        <div>Desarrollado con fines educativos · <b>Qualab Consultoría</b></div>
+        <button class="btn small ghost" id="btn-about-back">← Volver al menú</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODAL PREGUNTA -->
+<div class="modal" id="modal-q" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <div style="text-align:center">
+      <span class="q-cat" id="m-cat">Categoría</span>
+      <span class="q-diff" id="m-diff"></span>
+    </div>
+    <div class="q-icon" id="m-icon">🦠</div>
+    <h3 class="q-text" id="m-q"></h3>
+    <p class="order-help" id="m-help" style="display:none">👆 Toca en orden</p>
+    <div class="q-opts" id="m-opts"></div>
+    <div class="expl" id="m-expl" style="display:none"></div>
+  </div>
+</div>
+
+<!-- MODAL TIENDA -->
+<div class="modal" id="modal-shop" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <div class="modal-title">🛒 Tienda Científica</div>
+    <div class="modal-sub" id="shop-owner">Invierte tus puntos</div>
+    <div class="shop-balance"><span>💰 Puntos:</span><span class="big" id="shop-pts">0</span></div>
+    <div class="shop-grid" id="shop-grid"></div>
+    <div style="text-align:center;margin-top:16px">
+      <button class="btn small ghost" id="btn-shop-close">✕ Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL INFO ITEM -->
+<div class="modal" id="modal-info" role="dialog" aria-modal="true">
+  <div class="modal-box" style="max-width:460px">
+    <div class="modal-title" id="info-title">Objeto</div>
+    <p style="text-align:center;color:var(--muted);font-size:13px;line-height:1.6;margin:8px 0 18px" id="info-desc"></p>
+    <div style="text-align:center;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <button class="btn small" id="btn-info-use">USAR AHORA</button>
+      <button class="btn small danger" id="btn-info-cancel">CANCELAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AJUSTES -->
+<div class="modal" id="modal-settings" role="dialog" aria-modal="true">
+  <div class="modal-box" style="max-width:460px">
+    <div class="modal-title">⚙️ Ajustes</div>
+    <div class="modal-sub">Personaliza tu experiencia</div>
+    <div style="display:grid;gap:12px">
+      <label class="opt-btn" style="flex-direction:row;justify-content:space-between;text-align:left;padding:14px 16px">
+        <span><b style="font-size:14px;color:var(--text)">🔊 Sonido</b></span>
+        <input type="checkbox" id="set-sound" checked style="width:22px;height:22px;accent-color:#39ff88">
+      </label>
+      <label class="opt-btn" style="flex-direction:row;justify-content:space-between;text-align:left;padding:14px 16px">
+        <span><b style="font-size:14px;color:var(--text)">⏱️ Temporizador</b></span>
+        <input type="checkbox" id="set-timer" checked style="width:22px;height:22px;accent-color:#39ff88">
+      </label>
+      <label class="opt-btn" style="flex-direction:row;justify-content:space-between;text-align:left;padding:14px 16px">
+        <span><b style="font-size:14px;color:var(--text)">🎨 Alto contraste</b></span>
+        <input type="checkbox" id="set-hc" style="width:22px;height:22px;accent-color:#39ff88">
+      </label>
+      <label class="opt-btn" style="flex-direction:row;justify-content:space-between;text-align:left;padding:14px 16px">
+        <span><b style="font-size:14px;color:var(--text)">🎬 Reducir movimiento</b></span>
+        <input type="checkbox" id="set-rm" style="width:22px;height:22px;accent-color:#39ff88">
+      </label>
+    </div>
+    <div style="text-align:center;margin-top:18px">
+      <button class="btn small" id="btn-set-close">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TUTORIAL -->
+<div id="tutorial-overlay">
+  <div class="tut-highlight" id="tut-highlight"></div>
+  <div class="tut-tip" id="tut-tip">
+    <span class="tut-step" id="tut-step">1/6</span>
+    <b id="tut-title">Bienvenido/a</b>
+    <div id="tut-body">Cargando tutorial...</div>
+    <div class="tut-foot">
+      <button class="tut-skip" id="tut-skip">Saltar</button>
+      <button class="tut-next" id="tut-next">Siguiente →</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ==========================================================
+   MICROSERPIENTES — Edición Qualab · José Guerrero
+   ========================================================== */
+
+const CATEGORIES = {
+  patogenos:   {name:"Patógenos",     icon:"🦠"},
+  conservacion:{name:"Conservación",  icon:"❄️"},
+  fermentacion:{name:"Fermentación",  icon:"🥛"},
+  brotes:      {name:"Brotes",        icon:"🚨"},
+  conceptos:   {name:"Conceptos",     icon:"📈"},
+  higiene:     {name:"Higiene",       icon:"🧼"}
+};
+
+const BOARD_SETUPS = {
+  facil: {
+    size: 25, cols: 5, rows: 5,
+    ladders: [
+      {from:3,  to:8,  why:"🧼 Lavarse las manos"},
+      {from:7,  to:12, why:"❄️ Refrigerar bajo 5 °C"},
+      {from:14, to:19, why:"🌡️ Cocinar a 74 °C"},
+      {from:20, to:24, why:"🧴 Desinfectar superficies"}
+    ],
+    snakes: [
+      {from:10, to:4,  why:"🥚 Huevo crudo: Salmonella"},
+      {from:17, to:8,  why:"🥗 Mayonesa al sol"},
+      {from:22, to:13, why:"🔪 Tabla sucia"},
+      {from:25, to:16, why:"🍚 Arroz mal recalentado"}
+    ],
+    specials: {6:{type:"gift",icon:"🎁",name:"Regalo",desc:"Objeto gratis"},
+               13:{type:"bonus",icon:"💰",name:"Bonus",desc:"+200 puntos"},
+               19:{type:"speed",icon:"⚡",name:"Velocidad",desc:"Pregunta rápida x3"}}
+  },
+  normal: {
+    size: 40, cols: 8, rows: 5,
+    ladders: [
+      {from:4,  to:12, why:"🧼 Lavarse las manos"},
+      {from:9,  to:18, why:"❄️ Refrigerar bajo 5 °C"},
+      {from:15, to:24, why:"🌡️ Cocinar a 74 °C"},
+      {from:21, to:30, why:"🥛 Pasteurizar leche"},
+      {from:28, to:36, why:"🟢 Tablas separadas"}
+    ],
+    snakes: [
+      {from:13, to:6,  why:"🥚 Huevo crudo: Salmonella"},
+      {from:20, to:11, why:"🥗 Mayonesa al sol"},
+      {from:26, to:15, why:"🔪 Tabla sucia"},
+      {from:34, to:22, why:"🍚 Arroz mal recalentado"},
+      {from:38, to:28, why:"🥓 Cadena de frío rota"}
+    ],
+    specials: {7:{type:"gift",icon:"🎁",name:"Regalo",desc:"Objeto gratis"},
+               16:{type:"bonus",icon:"💰",name:"Bonus",desc:"+200 puntos"},
+               23:{type:"speed",icon:"⚡",name:"Velocidad",desc:"Pregunta x3"},
+               32:{type:"bet",icon:"🎰",name:"Apuesta",desc:"Doble o nada"},
+               37:{type:"swap",icon:"🔄",name:"Intercambio",desc:"Cambia posición"}}
+  },
+  dificil: {
+    size: 60, cols: 10, rows: 6,
+    ladders: [
+      {from:5,  to:15, why:"🧼 Lavarse las manos"},
+      {from:12, to:23, why:"❄️ Refrigerar bajo 5 °C"},
+      {from:20, to:32, why:"🌡️ Cocinar a 74 °C"},
+      {from:29, to:41, why:"🥛 Pasteurizar leche"},
+      {from:37, to:49, why:"🟢 Tablas separadas"},
+      {from:46, to:55, why:"🧪 pH bajo 4.6"}
+    ],
+    snakes: [
+      {from:18, to:8,  why:"🥚 Huevo crudo: Salmonella"},
+      {from:27, to:16, why:"🥗 Mayonesa al sol"},
+      {from:35, to:24, why:"🔪 Tabla sucia"},
+      {from:43, to:33, why:"🍚 Arroz mal recalentado"},
+      {from:51, to:40, why:"🥓 Cadena de frío rota"},
+      {from:57, to:48, why:"🍞 Temperatura ambiente"}
+    ],
+    specials: {8:{type:"gift",icon:"🎁",name:"Regalo",desc:"Objeto gratis"},
+               16:{type:"bonus",icon:"💰",name:"Bonus",desc:"+200 puntos"},
+               24:{type:"speed",icon:"⚡",name:"Velocidad",desc:"Pregunta x3"},
+               33:{type:"bet",icon:"🎰",name:"Apuesta",desc:"Doble o nada"},
+               42:{type:"swap",icon:"🔄",name:"Intercambio",desc:"Cambia posición"},
+               50:{type:"gift",icon:"🎁",name:"Regalo",desc:"Objeto gratis"},
+               56:{type:"bonus",icon:"💰",name:"Bonus",desc:"+200 puntos"}}
+  }
+};
+
+const QUESTIONS = [
+  {id:"p1", cat:"patogenos", diff:1, type:"mc", icon:"🥚",
+   q:"Soy una bacteria que se esconde en huevos crudos y pollo. Provoco fiebre y diarrea. ¿Quién soy?",
+   opts:["Salmonella","Lactobacillus","Aspergillus","Saccharomyces"], c:0,
+   e:"Salmonella enterica vive en el intestino de aves. Cocina el pollo a 74 °C."},
+  {id:"p2", cat:"patogenos", diff:2, type:"mc", icon:"🧊",
+   q:"Crezco incluso en la nevera. En embarazadas causo abortos. ¿Quién soy?",
+   opts:["Campylobacter","Listeria monocytogenes","Bacillus cereus","Acetobacter"], c:1,
+   e:"Listeria es psicrótrofa: tolera el frío. Se asocia a quesos blandos no pasteurizados."},
+  {id:"p3", cat:"patogenos", diff:2, type:"mc", icon:"🥩",
+   q:"Vivo en el intestino del ganado y llego a la carne molida. Ataco los riñones. ¿Quién soy?",
+   opts:["Staphylococcus aureus","E. coli O157:H7","Penicillium","Leuconostoc"], c:1,
+   e:"E. coli O157:H7 es enterohemorrágica. La carne molida debe cocinarse completamente."},
+  {id:"p4", cat:"patogenos", diff:3, type:"mc", icon:"🥫",
+   q:"Soy anaerobia. Crezco en conservas mal esterilizadas y paralizo los músculos. ¿Quién soy?",
+   opts:["Clostridium botulinum","Lactobacillus","Pseudomonas","Norovirus"], c:0,
+   e:"Clostridium botulinum produce la toxina botulínica. Las conservas caseras necesitan autoclave."},
+  {id:"p5", cat:"patogenos", diff:2, type:"tf", icon:"🤲",
+   q:"Las toxinas de Staphylococcus aureus resisten el calor: recalentar NO elimina el peligro.",
+   opts:["Verdadero","Falso"], c:0,
+   e:"Las enterotoxinas de S. aureus son termoestables. La clave es evitar la contaminación inicial."},
+  {id:"p6", cat:"patogenos", diff:2, type:"mc", icon:"🍚",
+   q:"Me encanta el arroz cocido a temperatura ambiente. Formo esporas resistentes al calor. ¿Quién soy?",
+   opts:["Bacillus cereus","Vibrio cholerae","Candida","Aspergillus flavus"], c:0,
+   e:"Bacillus cereus produce esporas y dos toxinas. El arroz debe enfriarse rápido."},
+  {id:"p7", cat:"patogenos", diff:2, type:"mc", icon:"🍗",
+   q:"Soy la causa bacteriana más frecuente de gastroenteritis y viajo en pollo mal cocido. ¿Quién soy?",
+   opts:["Campylobacter jejuni","Leuconostoc","Penicillium","Zygosaccharomyces"], c:0,
+   e:"Campylobacter jejuni es microaerófilo y muy común en aves."},
+  {id:"p8", cat:"patogenos", diff:3, type:"mc", icon:"🦪",
+   q:"No soy bacteria ni hongo: soy un virus. Viajo en mariscos crudos y causo vómitos explosivos. ¿Quién soy?",
+   opts:["Norovirus","Salmonella","Lactobacillus","Botrytis"], c:0,
+   e:"El norovirus es altísimamente contagioso. El lavado con agua y jabón es clave."},
+  {id:"p9", cat:"patogenos", diff:3, type:"mc", icon:"🥜",
+   q:"Soy un moho del cacahuete mal almacenado. Produzco aflatoxinas cancerígenas. ¿Quién soy?",
+   opts:["Penicillium roqueforti","Aspergillus flavus","Saccharomyces","Lactobacillus"], c:1,
+   e:"Aspergillus flavus produce aflatoxinas. NO se destruyen al cocinar."},
+  {id:"p10", cat:"patogenos", diff:1, type:"tf", icon:"🦠",
+   q:"Todos los mohos que crecen en los alimentos son peligrosos para la salud.",
+   opts:["Verdadero","Falso"], c:1,
+   e:"Falso. Penicillium roqueforti es beneficioso, pero los mohos del pan NO son seguros."},
+  {id:"p11", cat:"patogenos", diff:2, type:"mc", icon:"🥓",
+   q:"Hago que la carne se vuelva viscosa en la nevera. Soy resistente al frío. ¿Quién soy?",
+   opts:["Pseudomonas","Lactobacillus","Saccharomyces","Norovirus"], c:0,
+   e:"Pseudomonas es un alterante psicrótrofo. No suele enfermar pero arruina el alimento."},
+  {id:"p12", cat:"patogenos", diff:3, type:"mc", icon:"🥤",
+   q:"Soy una levadura resistente a los conservantes. Hago estallar botellas de refresco. ¿Quién soy?",
+   opts:["Zygosaccharomyces","Saccharomyces cerevisiae","Penicillium","Lactobacillus"], c:0,
+   e:"Zygosaccharomyces bailii resiste sorbatos y benzoatos."},
+  {id:"c1", cat:"conservacion", diff:1, type:"mc", icon:"🌡️",
+   q:"¿Cuál es la 'zona de peligro' donde las bacterias se multiplican más rápido?",
+   opts:["De -18 °C a 0 °C","De 5 °C a 60 °C","De 60 °C a 100 °C","De 0 °C a 4 °C"], c:1,
+   e:"Entre 5 y 60 °C las bacterias pueden duplicarse cada 20 minutos."},
+  {id:"c2", cat:"conservacion", diff:2, type:"tf", icon:"🧪",
+   q:"Un alimento con pH inferior a 4.6 es seguro frente a Clostridium botulinum.",
+   opts:["Verdadero","Falso"], c:0,
+   e:"Verdadero: por debajo de pH 4.6, C. botulinum no puede crecer ni producir toxina."},
+  {id:"c3", cat:"conservacion", diff:2, type:"mc", icon:"💧",
+   q:"La leche en polvo y el jamón seco tienen baja actividad de agua. ¿Qué efecto tiene?",
+   opts:["Favorece el crecimiento","Limita el crecimiento microbiano","No influye","Elimina virus"], c:1,
+   e:"Sin agua disponible los microorganismos no pueden crecer."},
+  {id:"c4", cat:"conservacion", diff:2, type:"mc", icon:"🔥",
+   q:"¿Qué hace exactamente la pasteurización?",
+   opts:["Esteriliza por completo","Reduce patógenos sin eliminar esporas","Congela bacterias","Añade conservantes"], c:1,
+   e:"La pasteurización (72 °C/15 s) elimina patógenos vegetativos pero no las esporas."},
+  {id:"c5", cat:"conservacion", diff:1, type:"mc", icon:"❄️",
+   q:"¿A qué temperatura el congelador detiene el crecimiento microbiano?",
+   opts:["0 °C","-18 °C","-2 °C","4 °C"], c:1,
+   e:"A -18 °C el agua se congela y los microorganismos quedan inactivos."},
+  {id:"c6", cat:"conservacion", diff:2, type:"order", icon:"📈",
+   q:"Ordena las fases de la curva de crecimiento microbiano:",
+   items:["Fase de latencia","Fase exponencial","Fase estacionaria","Fase de muerte"],
+   correct:[0,1,2,3],
+   e:"Latencia → Exponencial → Estacionaria → Muerte."},
+  {id:"c7", cat:"conservacion", diff:3, type:"mc", icon:"🧂",
+   q:"Un microorganismo 'halófilo' es aquel que...",
+   opts:["Ama la sal y crece en altas concentraciones","No tolera nada de sal","Vive del azúcar","Solo crece en frío"], c:0,
+   e:"Los halófilos toleran o requieren sal."},
+  {id:"c8", cat:"conservacion", diff:2, type:"tf", icon:"🛡️",
+   q:"Las esporas bacterianas se destruyen simplemente hirviendo a 100 °C.",
+   opts:["Verdadero","Falso"], c:1,
+   e:"Falso. Las esporas sobreviven a la ebullición."},
+  {id:"f1", cat:"fermentacion", diff:1, type:"mc", icon:"🍞",
+   q:"Hago que el pan crezca y que el vino tenga alcohol. ¿Quién soy?",
+   opts:["Saccharomyces cerevisiae","Lactobacillus","Salmonella","Norovirus"], c:0,
+   e:"Saccharomyces cerevisiae transforma azúcares en CO₂ y etanol."},
+  {id:"f2", cat:"fermentacion", diff:1, type:"mc", icon:"🥛",
+   q:"Transformo la leche en yogur y el repollo en chucrut. ¿Quién soy?",
+   opts:["Lactobacillus","Listeria","Staphylococcus","Vibrio"], c:0,
+   e:"Las bacterias lácticas acidifican el medio y compiten con patógenos."},
+  {id:"f3", cat:"fermentacion", diff:2, type:"mc", icon:"🍷",
+   q:"Convierto el alcohol del vino en ácido acético. ¿Quién soy?",
+   opts:["Acetobacter","Salmonella","Aspergillus","Candida"], c:0,
+   e:"Acetobacter aceti oxida el etanol. El vinagre inhibe casi todos los patógenos."},
+  {id:"f4", cat:"fermentacion", diff:2, type:"tf", icon:"🥬",
+   q:"En la fermentación láctica, el ácido producido ayuda a conservar el alimento.",
+   opts:["Verdadero","Falso"], c:0,
+   e:"Verdadero. El ácido láctico baja el pH a valores donde muchos patógenos no crecen."},
+  {id:"f5", cat:"fermentacion", diff:2, type:"mc", icon:"🧀",
+   q:"Vivo dentro del queso azul dándole su sabor. ¿Quién soy?",
+   opts:["Aspergillus flavus","Penicillium roqueforti","Botrytis cinerea","Pseudomonas"], c:1,
+   e:"Penicillium roqueforti es beneficioso en Roquefort, Gorgonzola y Cabrales."},
+  {id:"b1", cat:"brotes", diff:3, type:"mc", icon:"🚨",
+   q:"Brote en un buffet: incubación 6 h, vómitos intensos. ¿Sospechoso principal?",
+   opts:["Staphylococcus aureus","Listeria","Hepatitis A","Candida"], c:0,
+   e:"Incubación corta + vómitos intensos = toxina preformada. S. aureus es el clásico."},
+  {id:"b2", cat:"brotes", diff:3, type:"mc", icon:"🚨",
+   q:"Brote en una residencia: diarrea sanguinolenta + fallo renal en ancianos. ¿Culpable?",
+   opts:["E. coli O157:H7","Bacillus cereus","Norovirus","Lactobacillus"], c:0,
+   e:"E. coli O157:H7 produce toxina Shiga: diarrea sanguinolenta + SHU."},
+  {id:"b3", cat:"brotes", diff:3, type:"mc", icon:"🚨",
+   q:"Brote tras una boda: 60 afectados con vómitos en 24-48 h. Marisco crudo. ¿Culpable?",
+   opts:["Norovirus","Salmonella","Listeria","Aspergillus"], c:0,
+   e:"Norovirus: incubación 24-48 h, altísima contagiosidad, en moluscos filtradores."},
+  {id:"b4", cat:"brotes", diff:2, type:"mc", icon:"🚨",
+   q:"Brote familiar tras conservas caseras. Síntomas neurológicos: visión doble. ¿Culpable?",
+   opts:["Clostridium botulinum","Staphylococcus aureus","Salmonella","Lactobacillus"], c:0,
+   e:"Botulismo: síntomas neurológicos tras conservas mal esterilizadas. Urgencia médica."},
+  {id:"b5", cat:"brotes", diff:2, type:"mc", icon:"🚨",
+   q:"Tras arroz frito recalentado, vómitos a las 2 h. ¿Culpable?",
+   opts:["Bacillus cereus","Listeria","Campylobacter","Saccharomyces"], c:0,
+   e:"Bacillus cereus emético: incubación muy corta (1-6 h), vómitos."},
+  {id:"k1", cat:"conceptos", diff:1, type:"tf", icon:"🦠",
+   q:"Los microorganismos alterantes suelen ser más peligrosos que los patógenos.",
+   opts:["Verdadero","Falso"], c:1,
+   e:"Falso. Los alterantes arruinan el alimento pero rara vez enferman."},
+  {id:"k2", cat:"conceptos", diff:2, type:"mc", icon:"🥶",
+   q:"¿Qué es un microorganismo 'psicrótrofo'?",
+   opts:["Crece a altas temperaturas","Puede crecer en refrigeración","Necesita oxígeno obligatoriamente","Vive en ambientes muy salados"], c:1,
+   e:"Los psicrótrofos (Listeria, Pseudomonas) crecen a 0-7 °C."},
+  {id:"k3", cat:"conceptos", diff:3, type:"mc", icon:"💨",
+   q:"¿Qué significa que un microorganismo sea 'anaerobio obligado'?",
+   opts:["Necesita oxígeno","No puede crecer en presencia de oxígeno","Es un virus","Es un hongo filamentoso"], c:1,
+   e:"Los anaerobios obligados como Clostridium no toleran el oxígeno."},
+  {id:"k4", cat:"conceptos", diff:2, type:"order", icon:"🥛",
+   q:"Ordena estos alimentos de MÁS ácido a MENOS ácido:",
+   items:["Limón (pH ≈ 2)","Vinagre (pH ≈ 2.5)","Tomate (pH ≈ 4.3)","Leche (pH ≈ 6.5)"],
+   correct:[0,1,2,3],
+   e:"Limón → Vinagre → Tomate → Leche."},
+  {id:"k5", cat:"conceptos", diff:2, type:"tf", icon:"🧪",
+   q:"La pasteurización elimina TODAS las bacterias del alimento.",
+   opts:["Verdadero","Falso"], c:1,
+   e:"Falso. La pasteurización reduce patógenos vegetativos pero no elimina esporas."},
+  {id:"k6", cat:"conceptos", diff:3, type:"order", icon:"🌡️",
+   q:"Ordena de MÁS frío a MÁS caliente:",
+   items:["Congelador (-18 °C)","Refrigerador (4 °C)","Zona de peligro (25 °C)","Cocción segura (74 °C)"],
+   correct:[0,1,2,3],
+   e:"Congelador → Refrigerador → Zona de peligro → Cocción segura."},
+  {id:"h1", cat:"higiene", diff:1, type:"tf", icon:"🤲",
+   q:"Lavarse las manos 20 s con agua y jabón elimina la mayoría de patógenos.",
+   opts:["Verdadero","Falso"], c:0,
+   e:"Verdadero. Es la medida más eficaz para prevenir enfermedades alimentarias."},
+  {id:"h2", cat:"higiene", diff:1, type:"mc", icon:"🔪",
+   q:"¿Por qué NO cortar lechuga en la tabla donde cortaste pollo crudo?",
+   opts:["Se oxida la lechuga","Por contaminación cruzada","Cambia el sabor","La lechuga es ácida"], c:1,
+   e:"La contaminación cruzada es una de las principales causas de intoxicaciones en casa."},
+  {id:"h3", cat:"higiene", diff:2, type:"mc", icon:"🥗",
+   q:"Dejaste mayonesa casera 4 h a 25 °C. ¿Qué haces?",
+   opts:["Comerla","Desecharla: demasiado tiempo en zona de peligro","Guardarla para mañana","Calentarla"], c:1,
+   e:"Regla de las 2 horas: los perecederos no deben estar entre 5 y 60 °C más de 2 h."},
+  {id:"h4", cat:"higiene", diff:2, type:"mc", icon:"🍗",
+   q:"Acabas de cocinar pollo. ¿Cómo sabes que es seguro?",
+   opts:["Está dorado","Alcanzó 74 °C en el centro","Lo dejé 2 minutos","Cambió de olor"], c:1,
+   e:"74 °C en el centro mata Salmonella y Campylobacter."},
+  {id:"h5", cat:"higiene", diff:2, type:"mc", icon:"🧊",
+   q:"¿Cuál es la forma MÁS segura de descongelar carne molida?",
+   opts:["En la encimera","En la nevera, en un plato abajo","En agua caliente","Al sol"], c:1,
+   e:"Descongelar en la nevera mantiene la carne fuera de la zona de peligro."},
+  {id:"h6", cat:"higiene", diff:2, type:"mc", icon:"🍚",
+   q:"Sobró arroz del almuerzo. ¿Conducta más segura?",
+   opts:["Dejarlo en la olla","Enfriarlo rápido y refrigerar máximo 24 h","Recalentarlo varias veces","Dejarlo tapado"], c:1,
+   e:"Enfriar rápido y refrigerar limita Bacillus cereus."},
+  {id:"h7", cat:"higiene", diff:2, type:"mc", icon:"🤰",
+   q:"Embarazada: ¿qué evitar por riesgo de Listeria?",
+   opts:["Queso fresco pasteurizado","Quesos blandos no pasteurizados y embutidos","Pan integral","Fruta lavada"], c:1,
+   e:"Listeria crece en frío. Alimentos listos para comer refrigerados son los más riesgosos."}
+];
+
+const SHOP_ITEMS = [
+  {id:"dado",    icon:"🎲", name:"Dado Extra",     desc:"Tiras dos veces el dado y avanzas la suma.", cost:150, type:"active",  color:"#38e1ff"},
+  {id:"escudo",  icon:"🛡️", name:"Escudo Antiveneno", desc:"Te protege de la próxima serpiente.", cost:200, type:"passive", color:"#39ff88"},
+  {id:"doble",   icon:"⚡", name:"Doble Puntos",   desc:"Duplica los puntos de tu próxima respuesta correcta.", cost:250, type:"passive", color:"#ffcc33"},
+  {id:"trampa",  icon:"💣", name:"Trampa",         desc:"El rival retrocede 4 casillas.", cost:180, type:"active",  color:"#ff4d6d"},
+  {id:"teleport",icon:"🚀", name:"Teletransporte", desc:"Avanza 5 casillas al instante.", cost:300, type:"active",  color:"#a06bff"},
+  {id:"comodin", icon:"🍀", name:"Comodín",        desc:"Elimina 2 respuestas incorrectas.", cost:120, type:"passive", color:"#39ff88"},
+  {id:"iman",    icon:"🧲", name:"Imán de Escalera", desc:"Tu próxima escalera sube 5 casillas más.", cost:220, type:"passive", color:"#ff9f1c"},
+  {id:"bloqueo", icon:"🔒", name:"Bloqueo",        desc:"El rival pierde su próximo turno.", cost:200, type:"active",  color:"#ff4d9d"}
+];
+
+const BOTS = {
+  salmonella:  {name:"Salmonella",  icon:"🥚", accuracy:0.5,  color:"#ff4d6d"},
+  listeria:    {name:"Listeria",    icon:"🧊", accuracy:0.7,  color:"#38e1ff"},
+  aspergillus: {name:"Aspergillus", icon:"🥜", accuracy:0.55, color:"#a06bff"}
+};
+
+const EVENTS = [
+  {id:"hot",  icon:"🚨", name:"Ola de calor", desc:"Todos retroceden 2 casillas.",
+   apply:async()=>{ setMsg("<b>🚨 ¡Ola de calor!</b> Todos retroceden 2 casillas.", "bad"); await moveBackAll(2); }},
+  {id:"insp", icon:"🔍", name:"Inspección",   desc:"Todos retroceden 1 casilla.",
+   apply:async()=>{ setMsg("<b>🔍 Inspección sorpresa.</b> Todos retroceden 1 casilla.", "info"); await moveBackAll(1); }},
+  {id:"mut",  icon:"🧬", name:"Bacteria mutante", desc:"Consigues un Doble Puntos gratis.",
+   apply:async()=>{ const cur = state.players[state.currentPlayer]; cur.inventory.doble = (cur.inventory.doble||0)+1;
+     renderInventory(); setMsg("<b>🧬 ¡Bacteria mutante!</b> Consigues un ⚡ Doble Puntos.", "good"); }},
+  {id:"luck", icon:"🍀", name:"Golpe de suerte", desc:"El jugador actual gana 100 puntos.",
+   apply:async()=>{ state.players[state.currentPlayer].score += 100; renderTokens();
+     setMsg("<b>🍀 ¡Golpe de suerte!</b> +100 puntos.", "good"); }}
+];
+
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const shuffle = a => { const x=[...a]; for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]];} return x; };
+const byId = id => document.getElementById(id);
+const round = n => Math.round(n);
+
+const STORAGE_KEY = "microserp_qualab";
+function loadStore(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}"); }catch(e){ return {}; } }
+function saveStore(d){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }catch(e){} }
+let store = loadStore();
+store.best = store.best || 0;
+store.games = store.games || 0;
+store.totalCorrect = store.totalCorrect || 0;
+store.totalQuestions = store.totalQuestions || 0;
+store.seenIds = store.seenIds || {};
+store.catStats = store.catStats || {};
+store.wrongIds = store.wrongIds || [];
+store.saveState = store.saveState || null;
+store.settings = Object.assign({sound:true, timer:true, hc:false, rm:false}, store.settings || {});
+saveStore(store);
+
+let actx=null;
+function beep(f,d,type="sine",vol=.06){
+  if(!store.settings.sound) return;
+  try{
+    if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
+    const o=actx.createOscillator(), g=actx.createGain();
+    o.type=type; o.frequency.setValueAtTime(f,actx.currentTime);
+    g.gain.setValueAtTime(vol,actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+d);
+    o.connect(g); g.connect(actx.destination);
+    o.start(); o.stop(actx.currentTime+d);
+  }catch(e){}
+}
+const sOk    = ()=>{beep(660,.11,"triangle");setTimeout(()=>beep(990,.17,"triangle"),85);};
+const sBad   = ()=>{beep(170,.28,"sawtooth",.055);};
+const sStep  = ()=>{beep(520,.045,"square",.025);};
+const sSnake = ()=>{beep(400,.1,"sawtooth",.05);setTimeout(()=>beep(200,.28,"sawtooth",.06),90);};
+const sLadder= ()=>{[600,760,920,1100].forEach((f,i)=>setTimeout(()=>beep(f,.1,"triangle",.05),i*70));};
+const sWin   = ()=>{[523,659,784,1047,1319].forEach((f,i)=>setTimeout(()=>beep(f,.22,"triangle",.07),i*130));};
+const sBuy   = ()=>{beep(880,.08,"triangle",.06);setTimeout(()=>beep(1320,.14,"triangle",.06),90);};
+const sShield= ()=>{beep(400,.15,"sine",.06);setTimeout(()=>beep(700,.2,"sine",.06),100);};
+
+function getBoardConfig(){ return BOARD_SETUPS[state.difficulty] || BOARD_SETUPS.normal; }
+function getSnakesMap(){ const m={}; getBoardConfig().snakes.forEach(s=>m[s.from]={to:s.to,why:s.why}); return m; }
+function getLaddersMap(){ const m={}; getBoardConfig().ladders.forEach(l=>m[l.from]={to:l.to,why:l.why}); return m; }
+function getSpecialsMap(){ return getBoardConfig().specials || {}; }
+
+function cellInfo(n){
+  const cfg = getBoardConfig();
+  const {cols, rows} = cfg;
+  const row = Math.floor((n-1) / cols);
+  let col = (n-1) % cols;
+  if(row % 2 === 1) col = cols - 1 - col;
+  return {row, col, cols, rows};
+}
+function percentOf(n){
+  const {row, col, cols, rows} = cellInfo(n);
+  return {
+    x: ((col + 0.5) / cols) * 100,
+    y: ((rows - row - 0.5) / rows) * 100
+  };
+}
+
+const state = {
+  mode: "cpu", category: "mixto", difficulty: "normal",
+  botKey: "salmonella",
+  players: [], currentPlayer: 0, turn: 0, winner: null,
+  pool: [], askedIds: new Set(), wrongLog: [],
+  busy: false, pendingItem: null, bot: null, awaitingResponse: false,
+  speedActive: false, timerId: null, timeLeft: 0
+};
+
+function makePlayer(id, name, icon){
+  return { id, name, icon, pos: 0, score: 0, streak: 0, bestStreak: 0,
+    correct: 0, total: 0,
+    inventory: {dado:0, escudo:0, doble:0, trampa:0, teleport:0, comodin:0, iman:0, bloqueo:0},
+    skipNext: false, shieldActive: false, betNext: false };
+}
+
+const board = byId("board");
+function buildBoard(){
+  board.querySelectorAll(".cell, .token").forEach(el => el.remove());
+  const cfg = getBoardConfig();
+  const {size, cols, rows} = cfg;
+  board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  board.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+  board.style.aspectRatio = `${cols} / ${rows}`;
+
+  const specials = getSpecialsMap();
+  const snakes = getSnakesMap();
+  const ladders = getLaddersMap();
+
+  for(let n=1;n<=size;n++){
+    const {row, col} = cellInfo(n);
+    const c = document.createElement("div");
+    c.className = "cell " + (n%2===0 ? "even":"odd");
+    c.style.gridRow = (rows - row);
+    c.style.gridColumn = (col + 1);
+    c.id = "c"+n;
+    let content = `<span class="num">${n}</span>`;
+    if(specials[n]){
+      content += `<span class="mark">${specials[n].icon}</span>`;
+      c.classList.add("special");
+    }
+    if(snakes[n]) c.classList.add("snake");
+    if(ladders[n]) c.classList.add("ladder");
+    if(n===size) c.classList.add("goal");
+    c.innerHTML = content;
+    board.appendChild(c);
+  }
+  updateSizes();
+}
+function updateSizes(){
+  const w = board.clientWidth || 500;
+  const cfg = getBoardConfig();
+  const cellW = w / cfg.cols;
+  const cellH = (board.clientHeight || w) / cfg.rows;
+  const minCell = Math.min(cellW, cellH);
+  document.documentElement.style.setProperty("--cell-font", (minCell*0.42)+"px");
+  document.documentElement.style.setProperty("--token-font", (minCell*0.72)+"px");
+}
+window.addEventListener("resize", ()=>{ updateSizes(); drawLinks(); renderTokens(); });
+
+function drawLinks(){
+  const svg = byId("overlay");
+  [...svg.querySelectorAll("path, circle")].forEach(el => el.remove());
+  const NS = "http://www.w3.org/2000/svg";
+  svg.setAttribute("viewBox", "0 0 100 100");
+  svg.setAttribute("preserveAspectRatio", "none");
+
+  const snakes = getSnakesMap();
+  const ladders = getLaddersMap();
+
+  // ESCALERAS
+  for(const from in ladders){
+    const to = ladders[from].to;
+    const a = percentOf(+from), b = percentOf(to);
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const len = Math.hypot(dx, dy);
+    const ux = dx/len, uy = dy/len;
+    const px = -uy, py = ux;
+    const halfWidth = 0.9;
+
+    [[1,1],[-1,-1]].forEach(([sx,sy])=>{
+      const rail = document.createElementNS(NS, "path");
+      rail.setAttribute("d", `M ${a.x + px*halfWidth*sx} ${a.y + py*halfWidth*sy} L ${b.x + px*halfWidth*sx} ${b.y + py*halfWidth*sy}`);
+      rail.setAttribute("class", "ladder-rail");
+      rail.setAttribute("stroke-width", "0.55");
+      rail.setAttribute("vector-effect", "non-scaling-stroke");
+      svg.appendChild(rail);
+    });
+
+    const nRungs = Math.max(3, Math.round(len / 6));
+    for(let i=1; i<nRungs; i++){
+      const t = i / nRungs;
+      const cx = a.x + dx*t, cy = a.y + dy*t;
+      const rung = document.createElementNS(NS, "path");
+      rung.setAttribute("d", `M ${cx + px*halfWidth} ${cy + py*halfWidth} L ${cx - px*halfWidth} ${cy - py*halfWidth}`);
+      rung.setAttribute("class", "ladder-rung");
+      rung.setAttribute("stroke-width", "0.35");
+      rung.setAttribute("vector-effect", "non-scaling-stroke");
+      svg.appendChild(rung);
+    }
+
+    [[a, "#39ff88"], [b, "#38e1ff"]].forEach(([pt, color])=>{
+      const dot = document.createElementNS(NS, "circle");
+      dot.setAttribute("cx", pt.x);
+      dot.setAttribute("cy", pt.y);
+      dot.setAttribute("r", "0.9");
+      dot.setAttribute("fill", color);
+      dot.setAttribute("opacity", "0.9");
+      svg.appendChild(dot);
+    });
+  }
+
+  // SERPIENTES
+  for(const from in snakes){
+    const to = snakes[from].to;
+    const a = percentOf(+from);
+    const b = percentOf(to);
+
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const len = Math.hypot(dx, dy);
+    const ux = dx/len, uy = dy/len;
+    const px = -uy, py = ux;
+
+    const waves = Math.max(2, Math.round(len/8));
+    const amp = Math.min(1.8, len/14);
+    const N = 60;
+
+    let d = `M ${a.x} ${a.y}`;
+    for(let i=1; i<=N; i++){
+      const t = i/N;
+      const off = Math.sin(t * Math.PI * waves * 2) * amp * (1 - t*0.3);
+      d += ` L ${(a.x + dx*t + px*off).toFixed(3)} ${(a.y + dy*t + py*off).toFixed(3)}`;
+    }
+
+    const glow = document.createElementNS(NS, "path");
+    glow.setAttribute("d", d);
+    glow.setAttribute("class", "snake-glow");
+    glow.setAttribute("stroke-width", "2.5");
+    glow.setAttribute("id", "glow-"+from);
+    glow.setAttribute("vector-effect", "non-scaling-stroke");
+    svg.appendChild(glow);
+
+    const body = document.createElementNS(NS, "path");
+    body.setAttribute("d", d);
+    body.setAttribute("class", "snake-body");
+    body.setAttribute("stroke-width", "1.1");
+    body.setAttribute("vector-effect", "non-scaling-stroke");
+    svg.appendChild(body);
+
+    const head = document.createElementNS(NS, "circle");
+    head.setAttribute("cx", a.x);
+    head.setAttribute("cy", a.y);
+    head.setAttribute("r", "1.1");
+    head.setAttribute("class", "snake-head");
+    svg.appendChild(head);
+
+    const tail = document.createElementNS(NS, "circle");
+    tail.setAttribute("cx", b.x);
+    tail.setAttribute("cy", b.y);
+    tail.setAttribute("r", "0.7");
+    tail.setAttribute("class", "snake-tail");
+    svg.appendChild(tail);
+  }
+}
+
+function renderTokens(){
+  board.querySelectorAll(".token").forEach(el => el.remove());
+  const offsets = [{x:-2.5, y:0}, {x:2.5, y:0}];
+  state.players.forEach((p, i) => {
+    const t = document.createElement("div");
+    t.className = "token p"+p.id;
+    t.dataset.pid = p.id;
+    t.textContent = p.icon;
+    const off = offsets[i] || {x:0, y:0};
+    const pp = p.pos <= 0 ? {x:-15, y:110} : percentOf(p.pos);
+    t.style.left = (pp.x + off.x) + "%";
+    t.style.top  = (pp.y + off.y) + "%";
+    board.appendChild(t);
+  });
+
+  const row = byId("players-row");
+  row.innerHTML = "";
+  state.players.forEach(p => {
+    const card = document.createElement("div");
+    card.className = "pcard" + (state.currentPlayer === p.id && !state.winner ? " active" : "");
+    card.innerHTML = `
+      <div class="av">${p.icon}</div>
+      <div class="nm">${p.name}</div>
+      <div class="pos">${p.pos}</div>
+      <div class="sc">${p.score.toLocaleString("es-ES")} pts</div>
+      <div class="streak ${p.streak>=2?"on":""}">🔥 x${p.streak}</div>
+    `;
+    row.appendChild(card);
+  });
+
+  const cur = state.players[state.currentPlayer];
+  if(cur){
+    byId("inv-owner").textContent = "🎒 " + cur.name;
+    renderInventory();
+  }
+  byId("progress-text").textContent = `Turno ${state.turn}`;
+  const leader = [...state.players].sort((a,b)=>b.pos-a.pos)[0];
+  byId("progress-rival").textContent = leader ? `${leader.icon} ${leader.name} lidera` : "—";
+  const maxPos = Math.max(...state.players.map(p=>p.pos), 1);
+  const cfg = getBoardConfig();
+  byId("progress-fill").style.width = Math.min(100, (maxPos / cfg.size) * 100) + "%";
+}
+
+function burst(x,y,color){
+  for(let i=0;i<18;i++){
+    const p=document.createElement("div");
+    p.className="pt"; p.style.background=color;
+    p.style.left=x+"px"; p.style.top=y+"px";
+    p.style.boxShadow=`0 0 10px ${color}`;
+    document.body.appendChild(p);
+    const ang=Math.random()*Math.PI*2, dist=55+Math.random()*130;
+    p.animate([
+      {transform:"translate(0,0) scale(1)",opacity:1},
+      {transform:`translate(${Math.cos(ang)*dist}px,${Math.sin(ang)*dist}px) scale(0)`,opacity:0}
+    ],{duration:650+Math.random()*450,easing:"cubic-bezier(.2,.7,.3,1)"}).onfinish=()=>p.remove();
+  }
+}
+function floatNumber(x,y,text,color){
+  const n=document.createElement("div");
+  n.className="float-num"; n.textContent=text;
+  n.style.left=x+"px"; n.style.top=y+"px"; n.style.color=color;
+  document.body.appendChild(n); setTimeout(()=>n.remove(),1500);
+}
+function confetti(){
+  const colors = ["#39ff88","#38e1ff","#ff4d9d","#ffd93d","#a06bff"];
+  for(let i=0;i<60;i++){
+    const c = document.createElement("div");
+    c.className="confetti";
+    c.style.background = colors[i%colors.length];
+    c.style.left = (Math.random()*100) + "vw";
+    c.style.animation = `fall ${2+Math.random()*2}s linear ${Math.random()*1.5}s forwards`;
+    c.style.transform = `rotate(${Math.random()*360}deg)`;
+    document.body.appendChild(c); setTimeout(()=>c.remove(), 5500);
+  }
+}
+let toastTimer=null;
+function toast(text,color){
+  const t=byId("toast");
+  t.textContent=text;
+  t.style.background=`linear-gradient(100deg,${color},#ffffffcc)`;
+  t.style.color="#06121b";
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove("show"),1900);
+}
+
+const DICE_PIPS={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+function renderDie(v){
+  const d=byId("die");
+  const on = DICE_PIPS[v]||[];
+  let html="";
+  for(let i=0;i<9;i++) html+=`<div class="pip ${on.includes(i)?"on":""}"></div>`;
+  d.innerHTML=html;
+}
+async function animateDice(finalValue){
+  const d=byId("die");
+  d.classList.add("rolling");
+  const start=performance.now();
+  while(performance.now()-start < 700){
+    renderDie(1+Math.floor(Math.random()*6));
+    beep(760+Math.random()*200,.03,"square",.02);
+    await sleep(75);
+  }
+  d.classList.remove("rolling");
+  renderDie(finalValue);
+  beep(880,.1,"triangle",.06);
+  await sleep(150);
+}
+function setMsg(html,kind=""){
+  const m=byId("msg");
+  m.className="msg "+kind;
+  m.innerHTML=html;
+}
+
+async function movePlayer(p, steps, back=false){
+  const dir = back ? -1 : 1;
+  const cfg = getBoardConfig();
+  let moved = 0;
+  while(moved < Math.abs(steps)){
+    if(!back && p.pos >= cfg.size) break;
+    if(back && p.pos <= 1) break;
+    p.pos += dir;
+    moved++;
+    renderTokens();
+    const cell = byId("c"+p.pos);
+    if(cell){ cell.classList.add("highlight"); setTimeout(()=>cell.classList.remove("highlight"),800); }
+    const newTk = board.querySelector(`.token[data-pid="${p.id}"]`);
+    if(newTk){ newTk.classList.add("hop"); setTimeout(()=>newTk.classList.remove("hop"),320); }
+    sStep();
+    await sleep(150);
+  }
+}
+async function moveBackAll(steps){
+  for(const p of state.players){
+    if(p.pos > 1){ await movePlayer(p, steps, true); await sleep(150); }
+  }
+}
+
+function nextQuestion(){
+  const cats = state.category === "mixto" ? Object.keys(CATEGORIES) : [state.category];
+  const diffTarget = state.difficulty === "facil" ? 1 : state.difficulty === "dificil" ? 3 : 2;
+  if(state.pool.length === 0){
+    const wrongs = store.wrongIds || [];
+    const noVistas = QUESTIONS.filter(q => !store.seenIds[q.id] && cats.includes(q.cat));
+    const vistas = QUESTIONS.filter(q => store.seenIds[q.id] && cats.includes(q.cat));
+    const matchDiff = q => Math.abs(q.diff - diffTarget) <= 1;
+    let candidatas = noVistas.filter(matchDiff);
+    if(candidatas.length < 5) candidatas = candidatas.concat(noVistas.filter(q=>!matchDiff(q)));
+    if(candidatas.length < 5) candidatas = candidatas.concat(vistas.filter(matchDiff));
+    if(candidatas.length === 0) candidatas = QUESTIONS.slice();
+    const prio = candidatas.filter(q=>wrongs.includes(q.id));
+    const rest = candidatas.filter(q=>!wrongs.includes(q.id));
+    state.pool = shuffle(prio).concat(shuffle(rest));
+  }
+  return state.pool.pop();
+}
+
+function askQuestion(){
+  return new Promise(resolve=>{
+    const q = nextQuestion();
+    state.players[state.currentPlayer].total++;
+    store.totalQuestions++;
+    store.seenIds[q.id] = (store.seenIds[q.id] || 0) + 1;
+    state.askedIds.add(q.id);
+
+    const modal = byId("modal-q");
+    const cat = CATEGORIES[q.cat];
+    byId("m-cat").textContent = (cat ? cat.name : q.cat);
+    byId("m-diff").textContent = "⭐".repeat(q.diff);
+    byId("m-icon").textContent = q.icon;
+    byId("m-q").textContent = q.q;
+    byId("m-expl").style.display = "none";
+
+    const opts = byId("m-opts");
+    opts.innerHTML = "";
+
+    let eliminados = [];
+    if(state.players[state.currentPlayer].inventory.comodin > 0 && q.type === "mc"){
+      state.players[state.currentPlayer].inventory.comodin--;
+      renderInventory();
+      const incorrectas = q.opts.map((_,i)=>i).filter(i=>i!==q.c);
+      eliminados = shuffle(incorrectas).slice(0,2);
+    }
+
+    const speedBonus = state.speedActive;
+    state.speedActive = false;
+    const timeLimit = speedBonus ? 8 : 25;
+    let finalizar = null;
+
+    if(q.type === "mc" || q.type === "tf"){
+      byId("m-help").style.display = "none";
+      q.opts.forEach((txt,i)=>{
+        const b = document.createElement("button");
+        b.className = "q-opt";
+        if(eliminados.includes(i)) b.classList.add("eliminated");
+        b.innerHTML = `<span class="k">${i+1}</span><span>${txt}</span>`;
+        b.addEventListener("click",()=>{
+          if(eliminados.includes(i)) return;
+          if(finalizar) finalizar(i === q.c, b);
+        });
+        opts.appendChild(b);
+      });
+    } else if(q.type === "order"){
+      byId("m-help").style.display = "block";
+      let picked = [];
+      const shuffled = q.items.map((t,i)=>({t,i}));
+      const barajado = shuffle(shuffled);
+      barajado.forEach((item, idx)=>{
+        const b = document.createElement("button");
+        b.className = "q-opt";
+        b.innerHTML = `<span class="num-order">?</span><span>${item.t}</span>`;
+        b.addEventListener("click",()=>{
+          if(picked.includes(idx)) return;
+          picked.push(idx);
+          b.querySelector(".num-order").textContent = picked.length;
+          b.classList.add("picked");
+          if(picked.length === q.items.length){
+            const chosenOrigOrder = picked.map(pidx => barajado[pidx].i);
+            const ok = chosenOrigOrder.every((v,i) => v === q.correct[i]);
+            if(finalizar) finalizar(ok, b);
+          }
+        });
+        opts.appendChild(b);
+      });
+    }
+
+    modal.classList.add("show");
+    state.awaitingResponse = true;
+
+    let timerBar = null;
+    if(store.settings.timer){
+      state.timeLeft = timeLimit;
+      timerBar = document.createElement("div");
+      timerBar.style.cssText = "height:6px;border-radius:20px;background:linear-gradient(90deg,#39ff88,#38e1ff);margin-top:14px;transition:width .1s linear;width:100%";
+      opts.parentNode.insertBefore(timerBar, opts.nextSibling);
+      const startTime = performance.now();
+      state.timerId = setInterval(()=>{
+        const elapsed = (performance.now() - startTime)/1000;
+        state.timeLeft = Math.max(0, timeLimit - elapsed);
+        timerBar.style.width = (state.timeLeft/timeLimit*100) + "%";
+        if(state.timeLeft < timeLimit*0.3){
+          timerBar.style.background = "linear-gradient(90deg,#ff4d6d,#ff9f1c)";
+        }
+        if(state.timeLeft <= 0){
+          clearInterval(state.timerId);
+          if(state.awaitingResponse && finalizar) finalizar(false, null, true);
+        }
+      }, 100);
+    }
+
+    finalizar = (ok, btn) => {
+      if(!state.awaitingResponse) return;
+      state.awaitingResponse = false;
+      clearInterval(state.timerId);
+      if(timerBar && timerBar.parentNode) timerBar.remove();
+
+      const btns = [...opts.querySelectorAll(".q-opt")];
+      btns.forEach((b, j)=>{
+        b.disabled = true;
+        if(q.type === "mc" || q.type === "tf"){
+          if(j === q.c) b.classList.add("correct");
+          if(btn && b === btn && !ok) b.classList.add("wrong");
+        }
+      });
+
+      if(ok){ sOk(); if(btn){ const r = btn.getBoundingClientRect(); burst(r.left+r.width/2, r.top+r.height/2, "#39ff88"); } }
+      else { sBad(); }
+
+      const correctText = q.type === "order"
+        ? q.items.map((t,i)=>`${i+1}. ${t}`).join(" · ")
+        : q.opts[q.c];
+      const ex = byId("m-expl");
+      ex.innerHTML = `<b>${ok ? "✅ ¡Correcto!" : "❌ Respuesta: " + correctText}</b><br>${q.e}`;
+      ex.style.display = "block";
+
+      if(ok) store.totalCorrect++;
+      store.catStats[q.cat] = store.catStats[q.cat] || {ok:0, total:0};
+      store.catStats[q.cat].total++;
+      if(ok) store.catStats[q.cat].ok++;
+      saveStore(store);
+
+      setTimeout(()=>{
+        modal.classList.remove("show");
+        resolve({ok, q, speedBonus});
+      }, ok ? 1400 : 2400);
+    };
+  });
+}
+
+async function applySnakeLadder(p){
+  const pos = p.pos;
+  const cfg = getBoardConfig();
+  const maxCell = cfg.size;
+  const specials = getSpecialsMap();
+  const snakes = getSnakesMap();
+  const ladders = getLaddersMap();
+
+  if(specials[pos] && pos <= maxCell){
+    const sp = specials[pos];
+    toast(`${sp.icon} ${sp.name}`, "#ffcc33");
+    setMsg(`<b>${sp.icon} ${sp.name}:</b> ${sp.desc}`, "info");
+    await sleep(600);
+    await aplicarEspecial(sp, p);
+    return true;
+  }
+
+  if(ladders[pos] && pos <= maxCell){
+    let dest = ladders[pos].to;
+    if(p.inventory.iman > 0){
+      p.inventory.iman--;
+      renderInventory();
+      dest = Math.min(maxCell, dest + 5);
+      toast("🧲 ¡Imán de escalera! +5 casillas", "#ff9f1c");
+      await sleep(700);
+    }
+    sLadder();
+    toast(`🪜 ¡ESCALERA! ${pos} → ${dest}`, "#39ff88");
+    setMsg(`<b>🪜 ¡Buena práctica!</b> ${ladders[pos].why}<br>Subes a la casilla <b>${dest}</b>.`, "good");
+    await sleep(650);
+    p.pos = dest;
+    renderTokens();
+    await sleep(400);
+    return true;
+  }
+
+  if(snakes[pos] && pos <= maxCell){
+    if(p.shieldActive){
+      p.shieldActive = false;
+      sShield();
+      toast("🛡️ ¡Escudo antiveneno!", "#39ff88");
+      setMsg(`<b>🛡️ ¡Escudo activado!</b> Pisaste la serpiente de la casilla ${pos} pero el escudo te protegió.<br><i>${snakes[pos].why}</i>`, "good");
+      await sleep(1500);
+      return true;
+    }
+    const dest = snakes[pos].to;
+    sSnake();
+    const glow = byId("glow-"+pos);
+    if(glow){ glow.classList.add("on"); setTimeout(()=>glow.classList.remove("on"),1400); }
+    board.classList.add("shake");
+    setTimeout(()=>board.classList.remove("shake"), 400);
+    toast(`🐍 ¡SERPIENTE! ${pos} → ${dest}`, "#ff4d6d");
+    setMsg(`<b>🐍 ¡Error de higiene!</b> ${snakes[pos].why}<br>Bajas a la casilla <b>${dest}</b>.`, "bad");
+    await sleep(700);
+    p.pos = dest;
+    renderTokens();
+    await sleep(400);
+    return true;
+  }
+  return false;
+}
+
+async function aplicarEspecial(sp, p){
+  switch(sp.type){
+    case "gift": {
+      const ids = SHOP_ITEMS.map(i=>i.id);
+      const randomId = ids[Math.floor(Math.random()*ids.length)];
+      p.inventory[randomId] = (p.inventory[randomId]||0) + 1;
+      const item = SHOP_ITEMS.find(i=>i.id===randomId);
+      toast(`🎁 Recibes: ${item.icon} ${item.name}`, "#39ff88");
+      setMsg(`<b>🎁 ¡Regalo!</b> Recibes un <b>${item.icon} ${item.name}</b> gratis.`, "good");
+      renderInventory();
+      break;
+    }
+    case "bonus": {
+      p.score += 200;
+      toast("💰 +200 puntos", "#ffcc33");
+      setMsg("<b>💰 ¡Bonus!</b> Ganas <b>200 puntos</b> extra.", "good");
+      renderTokens();
+      break;
+    }
+    case "speed": {
+      state.speedActive = true;
+      setMsg("<b>⚡ ¡Velocidad!</b> Tu próxima pregunta tendrá solo 8 segundos y vale x3 puntos.", "info");
+      toast("⚡ Velocidad activada", "#ffd93d");
+      break;
+    }
+    case "bet": {
+      p.betNext = true;
+      setMsg("<b>🎰 ¡Apuesta!</b> Próxima pregunta: doble o nada.", "info");
+      toast("🎰 Apuesta activa", "#ff9f1c");
+      break;
+    }
+    case "swap": {
+      const other = state.players.find(x => x.id !== p.id);
+      if(other){
+        const tmp = p.pos;
+        p.pos = other.pos;
+        other.pos = tmp;
+        toast(`🔄 ¡Intercambio! ${p.name} ↔ ${other.name}`, "#a06bff");
+        setMsg(`<b>🔄 ¡Intercambio!</b> Intercambias posición con ${other.name}.`, "info");
+        renderTokens();
+      }
+      break;
+    }
+  }
+  await sleep(900);
+}
+
+function renderInventory(){
+  const cur = state.players[state.currentPlayer];
+  if(!cur) return;
+  const inv = byId("inventory");
+  inv.innerHTML = "";
+  let total = 0;
+  for(const id in cur.inventory){
+    if(cur.inventory[id] > 0){
+      total += cur.inventory[id];
+      const item = SHOP_ITEMS.find(i=>i.id===id);
+      if(!item) continue;
+      const slot = document.createElement("div");
+      slot.className = "inv-slot " + (item.type === "passive" ? "passive" : "active");
+      slot.setAttribute("role","button");
+      slot.setAttribute("tabindex","0");
+      slot.innerHTML = `${item.icon}<span class="qty">${cur.inventory[id]}</span><span class="hint">${item.name}</span>`;
+      const doUse = () => {
+        if(item.type === "active") usarObjeto(id);
+        else toast("🛡️ Objeto pasivo: se activa automáticamente", "#ffcc33");
+      };
+      slot.addEventListener("click", doUse);
+      slot.addEventListener("keydown", e => { if(e.key==="Enter" || e.key===" "){ e.preventDefault(); doUse(); } });
+      inv.appendChild(slot);
+    }
+  }
+  if(total === 0) inv.innerHTML = `<div class="inv-empty">Vacío. Visita la tienda 🛒</div>`;
+  byId("inv-count").textContent = total + (total===1 ? " objeto":" objetos");
+}
+
+function usarObjeto(id){
+  const cur = state.players[state.currentPlayer];
+  if(state.busy || state.winner || !cur) return;
+  if(cur.inventory[id] <= 0) return;
+  const item = SHOP_ITEMS.find(i=>i.id===id);
+  if(!item) return;
+  byId("info-title").textContent = item.icon + " " + item.name;
+  byId("info-desc").textContent = item.desc;
+  state.pendingItem = id;
+  byId("modal-info").classList.add("show");
+}
+
+async function confirmarUso(){
+  const id = state.pendingItem;
+  if(!id) return;
+  byId("modal-info").classList.remove("show");
+  state.pendingItem = null;
+  const cur = state.players[state.currentPlayer];
+  if(!cur || cur.inventory[id] <= 0) return;
+  cur.inventory[id]--;
+  renderInventory();
+
+  if(id === "dado"){ await ejecutarDadoExtra(); }
+  else if(id === "trampa"){ await ejecutarTrampa(); }
+  else if(id === "teleport"){ await ejecutarTeleport(); }
+  else if(id === "bloqueo"){
+    const other = state.players.find(p=>p.id !== cur.id);
+    if(other){
+      other.skipNext = true;
+      toast("🔒 ¡Rival bloqueado!", "#ff4d9d");
+      setMsg(`<b>🔒 Bloqueo activado.</b> ${other.name} pierde su próximo turno.`, "good");
+    }
+  }
+}
+
+async function ejecutarDadoExtra(){
+  const cur = state.players[state.currentPlayer];
+  state.busy = true;
+  byId("btn-roll").disabled = true;
+  setMsg("🎲 <b>Dado Extra:</b> Tirando dos veces...", "info");
+  const d1 = 1 + Math.floor(Math.random()*6);
+  await animateDice(d1);
+  const d2 = 1 + Math.floor(Math.random()*6);
+  await sleep(250);
+  await animateDice(d2);
+  const total = d1 + d2;
+  toast(`🎲 ${d1} + ${d2} = ${total}`, "#38e1ff");
+  setMsg(`<b>🎲 Dado Extra:</b> ${d1} + ${d2} = <b>${total}</b>.`, "good");
+  await sleep(500);
+  await movePlayer(cur, total);
+  const cfg = getBoardConfig();
+  if(cur.pos > cfg.size) cur.pos = cfg.size;
+  renderTokens();
+  await continuarTurnoJugador();
+}
+
+async function ejecutarTrampa(){
+  const cur = state.players[state.currentPlayer];
+  const other = state.players.find(p=>p.id !== cur.id);
+  if(!other || other.pos <= 1){ toast("💣 El rival ya está al inicio", "#ff4d6d"); return; }
+  toast("💣 ¡Trampa! Rival -4 casillas", "#ff4d6d");
+  setMsg(`<b>💣 Trampa:</b> ${other.name} retrocede 4 casillas.`, "good");
+  await sleep(400);
+  await movePlayer(other, 4, true);
+  renderTokens();
+}
+
+async function ejecutarTeleport(){
+  const cur = state.players[state.currentPlayer];
+  const cfg = getBoardConfig();
+  toast("🚀 ¡Teletransporte! +5 casillas", "#a06bff");
+  setMsg("<b>🚀 Teletransporte:</b> Avanzas 5 casillas.", "good");
+  await sleep(400);
+  await movePlayer(cur, 5);
+  if(cur.pos > cfg.size) cur.pos = cfg.size;
+  renderTokens();
+  if(cur.pos >= cfg.size){
+    state.winner = cur.id;
+    await sleep(400);
+    finishGame(cur.id);
+    return;
+  }
+  const done = await applySnakeLadder(cur);
+  if(cur.pos >= cfg.size){
+    state.winner = cur.id;
+    await sleep(400);
+    finishGame(cur.id);
+    return;
+  }
+  if(!done){
+    const res = await askQuestion();
+    await procesarRespuesta(res);
+  }
+  state.busy = false;
+  await sleep(500);
+  avanzarTurno();
+}
+
+async function procesarRespuesta(res){
+  const {ok, q, speedBonus} = res;
+  const cur = state.players[state.currentPlayer];
+  if(!cur) return;
+
+  if(ok){
+    cur.correct++;
+    cur.streak++;
+    cur.bestStreak = Math.max(cur.bestStreak, cur.streak);
+    let base = 100 + q.diff * 30;
+    if(speedBonus) base *= 3;
+    let mult = 1;
+    if(cur.streak >= 7) mult = 3;
+    else if(cur.streak >= 5) mult = 2;
+    else if(cur.streak >= 3) mult = 1.5;
+    if(cur.inventory.doble > 0){
+      cur.inventory.doble--;
+      renderInventory();
+      mult *= 2;
+      toast("⚡ ¡Doble puntos!", "#ffcc33");
+      await sleep(500);
+    }
+    if(cur.betNext){
+      cur.betNext = false;
+      mult *= 2;
+      toast("🎰 ¡Apuesta ganada! x2", "#ff9f1c");
+      await sleep(500);
+    }
+    const pts = round(base * mult);
+    cur.score += pts;
+    const tk = board.querySelector(`.token[data-pid="${cur.id}"]`);
+    if(tk){ const r = tk.getBoundingClientRect(); floatNumber(r.left+r.width/2, r.top, "+"+pts, "#39ff88"); }
+    setMsg(`<b>✅ ¡Correcto!</b> +${pts} pts · Racha: ${cur.streak}`, "good");
+    renderTokens();
+    await sleep(900);
+  } else {
+    cur.streak = 0;
+    if(cur.betNext){
+      cur.betNext = false;
+      cur.score = Math.max(0, cur.score - 100);
+      toast("🎰 Apuesta perdida: -100 pts", "#ff4d6d");
+      await sleep(500);
+    }
+    setMsg(`<b>❌ Incorrecto.</b> Retrocedes 3 casillas.`, "bad");
+    state.wrongLog.push(q);
+    if(!store.wrongIds.includes(q.id)) store.wrongIds.push(q.id);
+    if(store.wrongIds.length > 40) store.wrongIds = store.wrongIds.slice(-40);
+    saveStore(store);
+    await sleep(500);
+    await movePlayer(cur, 3, true);
+    renderTokens();
+    await sleep(400);
+  }
+  saveStore(store);
+}
+
+async function turnoJugador(){
+  if(state.busy || state.winner) return;
+  const cur = state.players[state.currentPlayer];
+  if(!cur) return;
+
+  if(cur.skipNext){
+    cur.skipNext = false;
+    setMsg(`<b>🔒 ${cur.name} pierde el turno.</b>`, "info");
+    toast("🔒 Turno saltado", "#ff4d9d");
+    await sleep(1200);
+    avanzarTurno();
+    return;
+  }
+
+  state.busy = true;
+  byId("btn-roll").disabled = true;
+
+  if(Math.random() < 0.05){
+    const ev = EVENTS[Math.floor(Math.random()*EVENTS.length)];
+    await ev.apply();
+    await sleep(500);
+  }
+
+  const cfg = getBoardConfig();
+  const dice = 1 + Math.floor(Math.random()*6);
+  setMsg(`🎲 ${cur.name} tira el dado...`, "info");
+  await animateDice(dice);
+
+  const before = cur.pos;
+  await movePlayer(cur, dice);
+  if(cur.pos > cfg.size) cur.pos = cfg.size;
+  renderTokens();
+  setMsg(`🎲 Ha salido <b>${dice}</b>. ${cur.name}: ${before} → ${cur.pos}.`);
+
+  if(cur.pos >= cfg.size){
+    state.winner = cur.id;
+    await sleep(400);
+    finishGame(cur.id);
+    return;
+  }
+
+  await applySnakeLadder(cur);
+  if(cur.pos >= cfg.size){
+    state.winner = cur.id;
+    await sleep(400);
+    finishGame(cur.id);
+    return;
+  }
+
+  setMsg("❓ ¡Casilla con pregunta!", "info");
+  await sleep(300);
+  const res = await askQuestion();
+  await procesarRespuesta(res);
+
+  state.busy = false;
+  await sleep(500);
+  avanzarTurno();
+}
+
+async function turnoCpu(){
+  const cpu = state.players[1];
+  if(!cpu || state.winner) return;
+  state.busy = true;
+  setMsg(`🦠 ${cpu.name} está pensando...`, "info");
+  await sleep(700);
+
+  if(cpu.skipNext){
+    cpu.skipNext = false;
+    setMsg(`<b>🔒 ${cpu.name} pierde el turno.</b>`, "good");
+    toast("🔒 Rival saltado", "#ff4d9d");
+    await sleep(1200);
+    state.busy = false;
+    avanzarTurno();
+    return;
+  }
+
+  const cfg = getBoardConfig();
+  const dice = 1 + Math.floor(Math.random()*6);
+  await animateDice(dice);
+  const before = cpu.pos;
+  await movePlayer(cpu, dice);
+  if(cpu.pos > cfg.size) cpu.pos = cfg.size;
+  renderTokens();
+
+  if(cpu.pos >= cfg.size){
+    state.winner = cpu.id;
+    await sleep(400);
+    finishGame(cpu.id);
+    return;
+  }
+
+  await applySnakeLadder(cpu);
+  if(cpu.pos >= cfg.size){
+    state.winner = cpu.id;
+    await sleep(400);
+    finishGame(cpu.id);
+    return;
+  }
+
+  const bot = state.bot || BOTS.salmonella;
+  const ok = Math.random() < bot.accuracy;
+
+  if(ok){
+    cpu.correct++;
+    cpu.streak++;
+    cpu.bestStreak = Math.max(cpu.bestStreak, cpu.streak);
+    const pts = 80 + Math.floor(Math.random()*60) + cpu.streak*10;
+    cpu.score += pts;
+    sOk();
+    setMsg(`<b>✅ ${cpu.name} acertó.</b> +${pts} pts.`, "bad");
+    await sleep(900);
+  } else {
+    cpu.streak = 0;
+    sBad();
+    setMsg(`<b>❌ ${cpu.name} falló.</b> Retrocede 3 casillas.`, "good");
+    await sleep(500);
+    await movePlayer(cpu, 3, true);
+    renderTokens();
+    await sleep(400);
+  }
+  renderTokens();
+  state.busy = false;
+  await sleep(400);
+  avanzarTurno();
+}
+
+function avanzarTurno(){
+  if(state.winner) return;
+  state.currentPlayer = (state.currentPlayer + 1) % state.players.length;
+  if(state.currentPlayer === 0) state.turn++;
+  renderTokens();
+  byId("btn-roll").disabled = false;
+  const cur = state.players[state.currentPlayer];
+  if(state.mode === "cpu" && state.currentPlayer === 1){
+    setTimeout(()=>turnoCpu(), 500);
+  } else {
+    setMsg(`🎲 Turno de <b>${cur.name}</b>. Pulsa TIRAR.`, "info");
+  }
+}
+
+async function continuarTurnoJugador(){
+  const cur = state.players[state.currentPlayer];
+  const cfg = getBoardConfig();
+  const done = await applySnakeLadder(cur);
+  if(cur.pos >= cfg.size){
+    state.winner = cur.id;
+    await sleep(400);
+    finishGame(cur.id);
+    return;
+  }
+  if(!done){
+    setMsg("❓ ¡Casilla con pregunta!", "info");
+    await sleep(300);
+    const res = await askQuestion();
+    await procesarRespuesta(res);
+  }
+  state.busy = false;
+  await sleep(500);
+  avanzarTurno();
+}
+
+function abrirTienda(){
+  const cur = state.players[state.currentPlayer];
+  if(state.busy || state.winner || !cur) return;
+  if(state.mode === "cpu" && state.currentPlayer !== 0) return;
+  byId("shop-owner").textContent = `Puntos de ${cur.name}`;
+  renderShop();
+  byId("modal-shop").classList.add("show");
+}
+function renderShop(){
+  const cur = state.players[state.currentPlayer];
+  byId("shop-pts").textContent = cur.score.toLocaleString("es-ES");
+  const grid = byId("shop-grid");
+  grid.innerHTML = "";
+  SHOP_ITEMS.forEach(item=>{
+    const div = document.createElement("div");
+    div.className = "shop-item " + item.type;
+    const canBuy = cur.score >= item.cost;
+    div.innerHTML = `
+      <div class="shop-ico" style="color:${item.color}">${item.icon}</div>
+      <div class="shop-info">
+        <div class="shop-name">${item.name}</div>
+        <div class="shop-desc">${item.desc}</div>
+        <button class="shop-buy" ${canBuy?"":"disabled"} data-id="${item.id}">💰 ${item.cost} pts</button>
+      </div>
+      <span class="shop-tag ${item.type==="passive"?"p":"a"}">${item.type==="passive"?"Pasivo":"Activo"}</span>
+    `;
+    div.querySelector(".shop-buy").addEventListener("click", ()=>comprarItem(item));
+    grid.appendChild(div);
+  });
+}
+function comprarItem(item){
+  const cur = state.players[state.currentPlayer];
+  if(cur.score < item.cost) return;
+  cur.score -= item.cost;
+  cur.inventory[item.id] = (cur.inventory[item.id] || 0) + 1;
+  sBuy();
+  toast("🛒 Compraste: " + item.name, item.color);
+  renderTokens();
+  renderInventory();
+  renderShop();
+}
+
+function finishGame(winnerId){
+  sWin();
+  store.games++;
+  const playerWon = winnerId === 0;
+  const maxScore = Math.max(...state.players.map(p=>p.score));
+  if(maxScore > store.best) store.best = maxScore;
+  store.saveState = null;
+  saveStore(store);
+
+  setTimeout(()=>{
+    showScreen("end");
+    byId("end-icon").textContent = playerWon ? "🏆" : (state.mode==="2p" ? "🎉" : "🦠");
+    byId("end-title").textContent = playerWon
+      ? (state.mode==="2p" ? "¡Ganó el Jugador 1!" : "¡Has ganado!")
+      : (state.mode==="2p" ? "¡Ganó el Jugador 2!" : "El microbio te superó");
+    byId("end-text").innerHTML = playerWon
+      ? "Has llegado a la casilla final aplicando buenas prácticas de higiene y microbiología. ¡Eres un/a auténtico/a inspector/a sanitario/a!"
+      : "El rival llegó primero. Repasa los errores y vuelve a intentarlo.";
+    const p0 = state.players[0];
+    byId("f-pts").textContent = p0.score.toLocaleString("es-ES");
+    byId("f-ok").textContent = p0.correct + "/" + p0.total;
+    byId("f-tot").textContent = p0.total;
+    byId("f-streak").textContent = "x" + p0.bestStreak;
+    const box = byId("review-box");
+    box.innerHTML = "";
+    if(state.wrongLog.length === 0){
+      box.innerHTML = `<div class="review-empty">🎉 ¡Sin errores en esta partida!</div>`;
+    } else {
+      const h = document.createElement("h3");
+      h.textContent = `📖 Repasa tus ${state.wrongLog.length} fallos`;
+      box.appendChild(h);
+      state.wrongLog.slice(0, 12).forEach(q=>{
+        const d = document.createElement("div");
+        d.className = "review-item";
+        d.innerHTML = `<b>${q.icon} ${q.q}</b>${q.e}`;
+        box.appendChild(d);
+      });
+    }
+    confetti();
+  }, 800);
+}
+
+function showScreen(n){
+  $$(".screen").forEach(s=>s.classList.remove("active"));
+  byId("screen-"+n).classList.add("active");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function renderConfigCategories(){
+  const row = byId("cat-row");
+  row.innerHTML = "";
+  const allBtn = document.createElement("button");
+  allBtn.className = "opt-btn" + (state.category==="mixto" ? " selected":"");
+  allBtn.dataset.val = "mixto";
+  allBtn.innerHTML = `<span class="big">🎲</span><span>Mixto</span><span class="small">Todas</span>`;
+  allBtn.addEventListener("click", ()=>selectOpt("category","mixto"));
+  row.appendChild(allBtn);
+  Object.entries(CATEGORIES).forEach(([key, cat])=>{
+    const b = document.createElement("button");
+    b.className = "opt-btn" + (state.category===key ? " selected":"");
+    b.dataset.val = key;
+    b.innerHTML = `<span class="big">${cat.icon}</span><span>${cat.name}</span>`;
+    b.addEventListener("click", ()=>selectOpt("category", key));
+    row.appendChild(b);
+  });
+}
+
+function selectOpt(group, val){
+  document.querySelectorAll(`[data-group="${group}"] .opt-btn`).forEach(b=>{
+    b.classList.toggle("selected", b.dataset.val === val);
+  });
+  if(group === "bot"){ state.botKey = val; }
+  else { state[group] = val; }
+}
+
+function initConfig(){
+  selectOpt("mode", "cpu");
+  selectOpt("category", "mixto");
+  selectOpt("difficulty", "normal");
+  selectOpt("bot", "salmonella");
+  renderConfigCategories();
+  $$('[data-group="mode"] .opt-btn').forEach(b=>{ b.onclick = () => selectOpt("mode", b.dataset.val); });
+  $$('[data-group="difficulty"] .opt-btn').forEach(b=>{ b.onclick = () => selectOpt("difficulty", b.dataset.val); });
+  $$('[data-group="bot"] .opt-btn').forEach(b=>{ b.onclick = () => selectOpt("bot", b.dataset.val); });
+}
+
+function startGame(){
+  state.mode = state.mode || "cpu";
+  state.category = state.category || "mixto";
+  state.difficulty = state.difficulty || "normal";
+  state.botKey = state.botKey || "salmonella";
+
+  state.players = [];
+  state.players.push(makePlayer(0, "Tú", "🧑‍🔬"));
+  if(state.mode === "2p"){
+    state.players.push(makePlayer(1, "Jugador 2", "👤"));
+    state.bot = null;
+  } else {
+    const bot = BOTS[state.botKey] || BOTS.salmonella;
+    state.bot = bot;
+    state.players.push(makePlayer(1, bot.name, bot.icon));
+  }
+
+  state.currentPlayer = 0;
+  state.turn = 1;
+  state.winner = null;
+  state.pool = [];
+  state.askedIds = new Set();
+  state.wrongLog = [];
+  state.busy = false;
+  state.pendingItem = null;
+  state.speedActive = false;
+  state.awaitingResponse = false;
+
+  buildBoard();
+  renderDie(6);
+  renderTokens();
+  renderInventory();
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      drawLinks();
+      updateSizes();
+      renderTokens();
+    });
+  });
+
+  byId("btn-roll").disabled = false;
+  byId("msg").className = "msg info";
+  byId("msg").innerHTML = `🎲 <b>Turno de ${state.players[0].name}.</b> Pulsa TIRAR.`;
+  showScreen("game");
+}
+
+function saveGameState(){
+  if(!state.players || state.winner) return;
+  store.saveState = {
+    players: state.players.map(p=>({
+      id:p.id, name:p.name, icon:p.icon, pos:p.pos, score:p.score,
+      streak:p.streak, correct:p.correct, total:p.total,
+      inventory: p.inventory, skipNext: p.skipNext, shieldActive: p.shieldActive
+    })),
+    mode: state.mode, category: state.category, difficulty: state.difficulty,
+    botKey: state.botKey, currentPlayer: state.currentPlayer, turn: state.turn
+  };
+  saveStore(store);
+}
+function continueGame(){
+  if(!store.saveState){ toast("💾 No hay partida guardada", "#ff9f1c"); return; }
+  const s = store.saveState;
+  state.players = s.players;
+  state.mode = s.mode;
+  state.category = s.category;
+  state.difficulty = s.difficulty;
+  state.botKey = s.botKey;
+  state.currentPlayer = s.currentPlayer;
+  state.turn = s.turn;
+  state.winner = null;
+  state.pool = [];
+  state.askedIds = new Set();
+  state.wrongLog = [];
+  state.busy = false;
+  state.awaitingResponse = false;
+  if(state.mode === "cpu") state.bot = BOTS[state.botKey] || BOTS.salmonella;
+
+  buildBoard();
+  renderDie(6);
+  renderTokens();
+  renderInventory();
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      drawLinks();
+      updateSizes();
+      renderTokens();
+    });
+  });
+  byId("btn-roll").disabled = false;
+  byId("msg").className = "msg info";
+  byId("msg").innerHTML = `🎲 <b>Turno de ${state.players[state.currentPlayer].name}.</b>`;
+  showScreen("game");
+}
+
+function renderStats(){
+  byId("st-games").textContent = store.games;
+  byId("st-best").textContent = store.best.toLocaleString("es-ES");
+  const acc = store.totalQuestions ? round(100 * store.totalCorrect / store.totalQuestions) : 0;
+  byId("st-acc").textContent = acc + "%";
+  byId("st-acc-sub").textContent = `${store.totalCorrect} / ${store.totalQuestions}`;
+  const seen = Object.keys(store.seenIds).length;
+  byId("st-seen").textContent = seen + " / " + QUESTIONS.length;
+  const cont = byId("st-cats");
+  cont.innerHTML = "";
+  Object.entries(CATEGORIES).forEach(([key, cat])=>{
+    const st = store.catStats[key] || {ok:0, total:0};
+    const pct = st.total ? round(100*st.ok/st.total) : 0;
+    const row = document.createElement("div");
+    row.className = "bar-row";
+    row.innerHTML = `<span class="lbl">${cat.icon} ${cat.name}</span>
+      <div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <span class="pct">${pct}%</span>`;
+    cont.appendChild(row);
+  });
+}
+
+function applySettings(){
+  document.body.classList.toggle("hc", !!store.settings.hc);
+  document.body.classList.toggle("rm", !!store.settings.rm);
+  const s1 = byId("set-sound"), s2 = byId("set-timer"), s3 = byId("set-hc"), s4 = byId("set-rm");
+  if(s1) s1.checked = !!store.settings.sound;
+  if(s2) s2.checked = !!store.settings.timer;
+  if(s3) s3.checked = !!store.settings.hc;
+  if(s4) s4.checked = !!store.settings.rm;
+}
+
+const TUTORIAL_STEPS = [
+  {target:()=>byId("board"), title:"Este es el tablero", body:"El tablero se adapta a cada dificultad: 5×5, 8×5 o 10×6."},
+  {target:()=>byId("btn-roll"), title:"Tira el dado", body:"Pulsa TIRAR (o la barra espaciadora) para avanzar."},
+  {target:()=>document.querySelector(".cell.ladder"), title:"Escaleras verdes", body:"Buenas prácticas de higiene. ¡Te suben!"},
+  {target:()=>document.querySelector(".cell.snake"), title:"Serpientes rojas", body:"Errores de contaminación. ¡Te arrastran hacia abajo!"},
+  {target:()=>byId("btn-shop"), title:"Tienda Científica", body:"Gasta los puntos que ganas respondiendo bien."},
+  {target:()=>byId("inventory"), title:"Tu inventario", body:"Los objetos pasivos se activan solos. Los activos los usas tú."}
+];
+let tutIndex = 0;
+function startTutorial(){
+  tutIndex = 0;
+  byId("tutorial-overlay").classList.add("show");
+  showTutStep();
+}
+function showTutStep(){
+  const step = TUTORIAL_STEPS[tutIndex];
+  if(!step){ endTutorial(); return; }
+  const el = step.target();
+  if(!el){ endTutorial(); return; }
+  const r = el.getBoundingClientRect();
+  const hl = byId("tut-highlight");
+  hl.style.left = (r.left - 8) + "px";
+  hl.style.top = (r.top - 8) + "px";
+  hl.style.width = (r.width + 16) + "px";
+  hl.style.height = (r.height + 16) + "px";
+  const tip = byId("tut-tip");
+  byId("tut-step").textContent = (tutIndex+1) + "/" + TUTORIAL_STEPS.length;
+  byId("tut-title").textContent = step.title;
+  byId("tut-body").textContent = step.body;
+  let tipX = r.left + r.width/2 - 170;
+  let tipY = r.bottom + 20;
+  if(tipY + 220 > window.innerHeight) tipY = r.top - 220;
+  if(tipY < 10) tipY = 10;
+  if(tipX + 340 > window.innerWidth) tipX = window.innerWidth - 350;
+  if(tipX < 10) tipX = 10;
+  tip.style.left = tipX + "px";
+  tip.style.top = tipY + "px";
+}
+function endTutorial(){ byId("tutorial-overlay").classList.remove("show"); }
+
+function bindEvents(){
+  // Menú principal: tarjetas
+  document.querySelectorAll(".menu-card").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      const a = b.dataset.action;
+      if(a === "play"){ initConfig(); showScreen("config"); }
+      else if(a === "tutorial"){ startTutorial(); }
+      else if(a === "stats"){ renderStats(); showScreen("stats"); }
+      else if(a === "settings"){ applySettings(); byId("modal-settings").classList.add("show"); }
+      else if(a === "continue"){ continueGame(); }
+      else if(a === "about"){ showScreen("about"); }
+    });
+  });
+
+  // Crédito del menú con data-action
+  document.querySelectorAll('[data-action="about"]').forEach(el=>{
+    el.addEventListener("click", ()=>showScreen("about"));
+  });
+
+  // Config
+  const back = byId("btn-config-back");
+  if(back) back.addEventListener("click", ()=>showScreen("menu"));
+  const start = byId("btn-config-start");
+  if(start) start.addEventListener("click", startGame);
+
+  // Tirar
+  const roll = byId("btn-roll");
+  if(roll) roll.addEventListener("click", ()=>{
+    if(state.busy || state.winner) return;
+    byId("btn-roll").disabled = true;
+    saveGameState();
+    if(state.mode === "2p" || state.currentPlayer === 0) turnoJugador();
+  });
+
+  // Tienda
+  const shop = byId("btn-shop");
+  if(shop) shop.addEventListener("click", ()=>{ abrirTienda(); saveGameState(); });
+  const shopClose = byId("btn-shop-close");
+  if(shopClose) shopClose.addEventListener("click", ()=>byId("modal-shop").classList.remove("show"));
+
+  // Info item
+  const infoUse = byId("btn-info-use");
+  if(infoUse) infoUse.addEventListener("click", confirmarUso);
+  const infoCancel = byId("btn-info-cancel");
+  if(infoCancel) infoCancel.addEventListener("click", ()=>{
+    byId("modal-info").classList.remove("show");
+    state.pendingItem = null;
+  });
+
+  // Menú en juego
+  const btnMenu = byId("btn-menu");
+  if(btnMenu) btnMenu.addEventListener("click", ()=>{ saveGameState(); showScreen("menu"); });
+
+  // Stats / End
+  const statsBack = byId("btn-stats-back");
+  if(statsBack) statsBack.addEventListener("click", ()=>showScreen("menu"));
+  const endMenu = byId("btn-end-menu");
+  if(endMenu) endMenu.addEventListener("click", ()=>showScreen("menu"));
+  const endAbout = byId("btn-end-about");
+  if(endAbout) endAbout.addEventListener("click", ()=>showScreen("about"));
+  const restart = byId("btn-restart");
+  if(restart) restart.addEventListener("click", ()=>{ initConfig(); showScreen("config"); });
+
+  // Sobre el autor
+  const aboutBack = byId("btn-about-back");
+  if(aboutBack) aboutBack.addEventListener("click", ()=>showScreen("menu"));
+
+  // Ajustes
+  const setClose = byId("btn-set-close");
+  if(setClose) setClose.addEventListener("click", ()=>{
+    store.settings.sound = byId("set-sound").checked;
+    store.settings.timer = byId("set-timer").checked;
+    store.settings.hc = byId("set-hc").checked;
+    store.settings.rm = byId("set-rm").checked;
+    saveStore(store);
+    applySettings();
+    byId("modal-settings").classList.remove("show");
+  });
+
+  // Cerrar modales
+  const mInfo = byId("modal-info");
+  if(mInfo) mInfo.addEventListener("click", e=>{
+    if(e.target === mInfo){ mInfo.classList.remove("show"); state.pendingItem = null; }
+  });
+  const mShop = byId("modal-shop");
+  if(mShop) mShop.addEventListener("click", e=>{
+    if(e.target === mShop) mShop.classList.remove("show");
+  });
+  const mSet = byId("modal-settings");
+  if(mSet) mSet.addEventListener("click", e=>{
+    if(e.target === mSet) mSet.classList.remove("show");
+  });
+
+  // Teclado
+  document.addEventListener("keydown", e=>{
+    if(byId("modal-q").classList.contains("show") && state.awaitingResponse){
+      const n = parseInt(e.key, 10);
+      if(n >= 1 && n <= 4){
+        const btns = byId("m-opts").querySelectorAll(".q-opt");
+        if(btns[n-1] && !btns[n-1].disabled && !btns[n-1].classList.contains("eliminated")) btns[n-1].click();
+      }
+    }
+    if(e.code === "Space"
+      && state.currentPlayer === 0
+      && !state.busy && !state.winner
+      && byId("screen-game").classList.contains("active")
+      && !byId("modal-q").classList.contains("show")
+      && !byId("modal-shop").classList.contains("show")
+      && !byId("modal-info").classList.contains("show")
+      && !byId("modal-settings").classList.contains("show")
+      && !byId("tutorial-overlay").classList.contains("show")){
+      e.preventDefault();
+      byId("btn-roll").click();
+    }
+    if(e.code === "KeyB" && byId("screen-game").classList.contains("active") && !state.busy){
+      abrirTienda();
+    }
+  });
+
+  // Tutorial
+  const tNext = byId("tut-next");
+  if(tNext) tNext.addEventListener("click", ()=>{ tutIndex++; showTutStep(); });
+  const tSkip = byId("tut-skip");
+  if(tSkip) tSkip.addEventListener("click", endTutorial);
+  window.addEventListener("resize", ()=>{
+    if(byId("tutorial-overlay").classList.contains("show")) showTutStep();
+    updateSizes();
+    drawLinks();
+    renderTokens();
+  });
+}
+
+(function bg(){
+  const emojis=["🦠","🧫","🔬","🧪","🫧","🦠","🧬","🐍","🪜","💊"];
+  for(let i=0;i<12;i++){
+    const m=document.createElement("div");
+    m.className="mb";
+    m.textContent=emojis[i%emojis.length];
+    m.style.left=(Math.random()*94)+"vw";
+    m.style.top=(Math.random()*90)+"vh";
+    m.style.fontSize=(22+Math.random()*44)+"px";
+    m.style.animationDuration=(18+Math.random()*20)+"s";
+    m.style.animationDelay=(-Math.random()*22)+"s";
+    document.body.appendChild(m);
+  }
+})();
+
+(function init(){
+  applySettings();
+  bindEvents();
+  const bestEl = byId("best");
+  if(bestEl) bestEl.textContent = (store.best||0).toLocaleString("es-ES");
+  const knowEl = byId("know");
+  if(knowEl){
+    const acc = store.totalQuestions ? round(100*store.totalCorrect/store.totalQuestions) : 0;
+    knowEl.textContent = acc + "%";
+  }
+  renderDie(6);
+})();
+</script>
+</body>
+</html>
